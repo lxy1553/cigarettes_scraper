@@ -1,0 +1,15 @@
+# IDE
+.idea/
+
+# Claude local config
+.claude/
+
+# Python
+__pycache__/
+*.pyc
+
+# macOS
+.DS_Store
+
+# Environment
+.env
