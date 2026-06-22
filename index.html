@@ -21,16 +21,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Micr
 .search-box{flex:1;min-width:180px;padding:7px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;outline:none;background:#fff}
 .search-box:focus{border-color:#0f3460;box-shadow:0 0 0 3px rgba(15,52,96,.1)}
 .stats{font-size:12px;color:#888;white-space:nowrap}
-.btn{padding:7px 14px;border:1px solid #ddd;border-radius:8px;background:#fff;cursor:pointer;font-size:12px;white-space:nowrap;text-decoration:none;display:inline-flex;align-items:center;gap:4px}
+.btn{padding:7px 14px;border:1px solid #ddd;border-radius:8px;background:#fff;cursor:pointer;font-size:12px;white-space:nowrap;text-decoration:none;display:inline-flex;align-items:center;gap:4px;transition:all .2s}
 .btn:hover{background:#f0f2f5}
+.btn:disabled{opacity:.5;cursor:not-allowed}
 .btn.primary{background:#0f3460;color:#fff;border-color:#0f3460}
 .btn.primary:hover{background:#1a4a80}
 .btn.green{background:#1b5e20;color:#fff;border-color:#1b5e20}
 .btn.green:hover{background:#2e7d32}
-.loading{text-align:center;padding:60px;color:#999}
+.btn.orange{background:#e65100;color:#fff;border-color:#e65100}
+.btn.orange:hover{background:#bf3f00}
+.loading-page{text-align:center;padding:60px;color:#999}
 .spinner{width:40px;height:40px;border:4px solid #e0e0e0;border-top:4px solid #0f3460;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}
 @keyframes spin{to{transform:rotate(360deg)}}
-.error{text-align:center;padding:40px;color:#c62828;background:#ffebee;border-radius:8px;margin:10px}
+.error-box{text-align:center;padding:40px;color:#c62828;background:#ffebee;border-radius:8px;margin:10px}
 .table-wrap{background:#fff;border-radius:10px;box-shadow:0 1px 6px rgba(0,0,0,.06);overflow:hidden}
 .table-scroll{overflow-x:auto;max-height:calc(100vh - 260px);overflow-y:auto}
 table{width:100%;border-collapse:collapse;font-size:12px}
@@ -53,16 +56,42 @@ tr:hover td{background:#f5f7ff}
 .footer{text-align:center;padding:12px;color:#aaa;font-size:11px}
 .footer a{color:#888;text-decoration:none}
 .footer a:hover{color:#0f3460}
+
+/* Modal overlay */
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:999;justify-content:center;align-items:center}
+.modal-overlay.active{display:flex}
+.modal{background:#fff;border-radius:16px;padding:32px;max-width:480px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);text-align:center}
+.modal .modal-icon{font-size:48px;margin-bottom:12px}
+.modal h2{font-size:18px;margin-bottom:8px}
+.modal p{color:#666;font-size:13px;margin-bottom:12px;line-height:1.6}
+.modal .progress-bar{height:6px;background:#e0e0e0;border-radius:3px;margin:16px 0;overflow:hidden}
+.modal .progress-bar .fill{height:100%;background:linear-gradient(90deg,#0f3460,#1a6bb0);border-radius:3px;transition:width .5s;width:0%}
+.modal .status-dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.modal .status-dot.pending{background:#f9a825;animation:pulse 1s infinite}
+.modal .status-dot.running{background:#0f3460;animation:pulse .6s infinite}
+.modal .status-dot.success{background:#2e7d32}
+.modal .status-dot.fail{background:#c62828}
+.modal .elapsed{font-size:24px;font-weight:700;color:#333;margin:8px 0}
+.modal .elapsed-label{font-size:11px;color:#999}
+.modal .step-list{text-align:left;margin:12px 0;padding:0;list-style:none}
+.modal .step-list li{padding:6px 0;font-size:12px;color:#888;display:flex;align-items:center;gap:8px}
+.modal .step-list li.done{color:#2e7d32}
+.modal .step-list li.active{color:#0f3460;font-weight:500}
+.modal .step-list li::before{content:'';display:inline-block;width:18px;text-align:center}
+.modal .step-list li.done::before{content:'✓';color:#2e7d32;font-weight:700}
+.modal .step-list li.active::before{content:'◉';color:#0f3460;animation:pulse 1s infinite}
+.modal .step-list li::before{content:'○';color:#ccc}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 @media(max-width:768px){.header{padding:10px 12px}.header h1{font-size:16px}.tabs{flex-direction:column}th,td{padding:3px 5px;font-size:10px}}
 </style>
 </head>
 <body>
 <div class="header">
 <h1>全渠道烟草 & 耗材信息表</h1>
-<p>数据来源：PipeUncle · 华盛电商 · Ribenyan | 实时读取 GitHub 最新数据</p>
+<p>数据来源：PipeUncle · 华盛电商 · Ribenyan</p>
 </div>
 <div class="container">
-<div id="loading" class="loading">
+<div id="loading-page" class="loading-page">
 <div class="spinner"></div>
 <p>正在加载数据...</p>
 </div>
@@ -76,7 +105,7 @@ tr:hover td{background:#f5f7ff}
 <span class="stats" id="result-stats"></span>
 <button class="btn" onclick="resetAll()">重置</button>
 <button class="btn primary" onclick="exportCSV()">导出CSV</button>
-<a class="btn green" href="https://github.com/lxy1553/cigarettes_scraper/actions/workflows/scrape.yml" target="_blank">更新数据</a>
+<button class="btn orange" id="update-btn" onclick="triggerUpdate()">⚡ 更新数据</button>
 </div>
 <div class="table-wrap">
 <div class="table-scroll">
@@ -90,37 +119,251 @@ tr:hover td{background:#f5f7ff}
 </div>
 </div>
 
+<!-- Modal -->
+<div class="modal-overlay" id="update-modal">
+<div class="modal" id="modal-content">
+<div class="modal-icon" id="modal-icon">⚡</div>
+<h2 id="modal-title">正在触发更新...</h2>
+<p id="modal-desc">请稍候，数据爬取和聚合需要一些时间</p>
+<div class="progress-bar"><div class="fill" id="progress-fill"></div></div>
+<div class="elapsed" id="elapsed-time">00:00</div>
+<div class="elapsed-label">已等待</div>
+<ul class="step-list" id="step-list">
+<li id="step-trigger">触发工作流</li>
+<li id="step-queued">队列中</li>
+<li id="step-running">爬虫运行中</li>
+<li id="step-complete">完成</li>
+</ul>
+<p id="modal-footer-text" style="font-size:11px;color:#aaa;margin-top:12px"></p>
+</div>
+</div>
+
 <script>
+// ===== CONFIG =====
+var GH_OWNER = 'lxy1553';
+var GH_REPO = 'cigarettes_scraper';
+var PROD_URL = 'https://raw.githubusercontent.com/'+GH_OWNER+'/'+GH_REPO+'/main/data/aggregated/all_cigarette.csv';
+var CONS_URL = 'https://raw.githubusercontent.com/'+GH_OWNER+'/'+GH_REPO+'/main/data/aggregated/all_consumables.csv';
+var WORKFLOW_FILE = 'scrape.yml';
+
+// ===== CSV Parser =====
 function parseCSV(t){t=t.replace(/^﻿/,'');var l=t.split(/\r?\n/).filter(function(l){return l.trim()});if(!l.length)return{columns:[],rows:[]}
 var c=parseLine(l[0]),r=[];for(var i=1;i<l.length;i++){var v=parseLine(l[i]);if(!v.length)continue;var o={}
 for(var j=0;j<c.length;j++)o[c[j]]=(j<v.length?v[j]:'').trim();r.push(o)}return{columns:c,rows:r}}
 function parseLine(l){var r=[],c='',q=false;for(var i=0;i<l.length;i++){var x=l[i];if(q){if(x==='"'){if(i+1<l.length&&l[i+1]==='"'){c+='"';i++}else q=false}else c+=x}else{if(x==='"')q=true;else if(x===','){r.push(c);c=''}else c+=x}}r.push(c);return r}
 
+// ===== State =====
 var PRODS=[],CONS=[],ct='products',cd=[],ad=[],sc=null,sd='asc',cf={};
-var PROD_URL='https://raw.githubusercontent.com/lxy1553/cigarettes_scraper/main/data/aggregated/all_cigarette.csv';
-var CONS_URL='https://raw.githubusercontent.com/lxy1553/cigarettes_scraper/main/data/aggregated/all_consumables.csv';
+var pollingTimer=null,elapsedTimer=null,startTime=null;
 
-function init(){Promise.all([fetch(PROD_URL).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.text()}),fetch(CONS_URL).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.text()})]).then(function(r){var p=parseCSV(r[0]),c=parseCSV(r[1]);PRODS=p.rows;CONS=c.rows;document.getElementById('loading').style.display='none';document.getElementById('app').style.display='block';document.getElementById('badge-products').textContent=PRODS.length;document.getElementById('badge-consumables').textContent=CONS.length;var n=new Date();document.getElementById('last-update').innerHTML='数据版本：'+n.toLocaleDateString('zh-CN')+' '+n.toLocaleTimeString('zh-CN');switchTab('products')})['catch'](function(e){document.getElementById('loading').innerHTML='<div class="error">加载失败：'+e.message+'<br><br><button class="btn" onclick="location.reload()">重试</button></div>'})}
+// ===== Init =====
+function init(){Promise.all([fetch(PROD_URL).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.text()}),fetch(CONS_URL).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.text()})]).then(function(r){var p=parseCSV(r[0]),c=parseCSV(r[1]);PRODS=p.rows;CONS=c.rows;document.getElementById('loading-page').style.display='none';document.getElementById('app').style.display='block';document.getElementById('badge-products').textContent=PRODS.length;document.getElementById('badge-consumables').textContent=CONS.length;var n=new Date();document.getElementById('last-update').innerHTML='数据版本：'+n.toLocaleDateString('zh-CN')+' '+n.toLocaleTimeString('zh-CN');switchTab('products')})['catch'](function(e){document.getElementById('loading-page').innerHTML='<div class="error-box">加载失败：'+e.message+'<br><br><button class="btn" onclick="location.reload()">重试</button></div>'})}
 
 function switchTab(t){ct=t;document.getElementById('tab-products').classList.toggle('active',t==='products');document.getElementById('tab-consumables').classList.toggle('active',t==='consumables');ad=t==='products'?PRODS:CONS;cd=[].concat(ad);cf={};sc=null;sd='asc';document.getElementById('global-search').value='';bt();af()}
 function bt(){if(!ad.length)return;var c=Object.keys(ad[0]),h='<tr>';c.forEach(function(k,i){var s=sc===k;h+='<th onclick="ts(\''+k+'\')" class="'+(s?'sorted':'')+'">'+k;h+='<span class="sort-icon">'+(s?(sd==='asc'?' ▲':' ▼'):'')+'</span>';h+='<input class="col-filter-input" id="fc-'+i+'" placeholder="'+k+'" value="'+(cf[k]||'')+'" onclick="event.stopPropagation()" oninput="sf(\''+k+'\',this.value)"></th>'});document.getElementById('table-head').innerHTML=h+'</tr>'}
-
 function rr(d){if(!d.length){document.getElementById('table-body').innerHTML='<tr><td colspan="99" style="text-align:center;padding:40px;color:#999">没有匹配的数据</td></tr>';document.getElementById('result-stats').textContent='0 / '+ad.length+' 条';return}
 var c=Object.keys(ad[0]),h='';for(var i=0;i<d.length;i++){var r=d[i];h+='<tr>';for(var j=0;j<c.length;j++){var k=c[j],v=r[k]||'',cl='';if(k.indexOf('价格')>=0&&v){var n=parseFloat(v);if(!isNaN(n))cl=n>300?'price-high':n>50?'price-mid':'price-low'}
 if(k==='库存'){if(v==='有货'||v==='In Stock')v='<span class="stock-in">有货</span>';else if(v==='无货'||v==='Out of Stock')v='<span class="stock-out">无货</span>'}
 h+='<td class="'+cl+'">'+v+'</td>'}h+='</tr>'}
 document.getElementById('table-body').innerHTML=h;document.getElementById('result-stats').textContent='显示 '+d.length+' / '+ad.length+' 条'}
-
 function ts(k){if(sc===k)sd=sd==='asc'?'desc':'asc';else{sc=k;sd='asc'}bt();af()}
 function sf(k,v){if(v&&v.trim())cf[k]=v.trim().toLowerCase();else delete cf[k];af()}
 function af(){var d=[].concat(ad),c=Object.keys(ad[0]||{}),gs=document.getElementById('global-search').value.toLowerCase();if(gs)d=d.filter(function(r){for(var j=0;j<c.length;j++)if(String(r[c[j]]||'').toLowerCase().indexOf(gs)>=0)return true;return false});for(var k in cf){var fv=cf[k];if(fv)d=d.filter(function(r){return String(r[k]||'').toLowerCase().indexOf(fv)>=0})}
 if(sc)d.sort(function(a,b){var va=a[sc]||'',vb=b[sc]||'',na=parseFloat(va),nb=parseFloat(vb);if(!isNaN(na)&&!isNaN(nb))return sd==='asc'?na-nb:nb-na;va=String(va);vb=String(vb);return sd==='asc'?va.localeCompare(vb):vb.localeCompare(va)})
 cd=d;rr(d)}
-
 function resetAll(){cf={};sc=null;sd='asc';document.getElementById('global-search').value='';cd=[].concat(ad);bt();af()}
 function exportCSV(){var c=Object.keys(ad[0]||{}),d=cd.length?cd:ad,csv='﻿'+c.join(',')+'\n';for(var i=0;i<d.length;i++){var r=[];for(var j=0;j<c.length;j++){var v=String(d[i][c[j]]||'').replace(/"/g,'""');r.push(v.indexOf(',')>=0||v.indexOf('\n')>=0?'"'+v+'"':v)}csv+=r.join(',')+'\n'}
 var b=new Blob([csv],{type:'text/csv;charset=utf-8'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=ct==='products'?'all_cigarette.csv':'all_consumables.csv';a.click();URL.revokeObjectURL(u)}
-init()
+
+// ===== Update workflow =====
+function triggerUpdate(){
+  var btn=document.getElementById('update-btn');
+  if(btn.disabled)return;
+  btn.disabled=true;btn.innerHTML='⏳ 检测中...';
+
+  // Show modal
+  document.getElementById('update-modal').classList.add('active');
+  document.getElementById('modal-icon').textContent='🔄';
+  document.getElementById('modal-title').textContent='正在检查更新状态...';
+  document.getElementById('modal-desc').textContent='打开 GitHub Actions 页面后，请点击 "Run workflow" 手动触发';
+  document.getElementById('progress-fill').style.width='5%';
+  document.getElementById('elapsed-time').textContent='00:00';
+  setSteps(1);
+  document.getElementById('modal-footer-text').innerHTML='<a href="https://github.com/'+GH_OWNER+'/'+GH_REPO+'/actions/workflows/'+WORKFLOW_FILE+'" target="_blank" class="btn primary">打开 Actions → 点击 Run workflow</a>';
+
+  startTime=Date.now();
+  elapsedTimer=setInterval(updateElapsed,1000);
+
+  // Get the latest run ID first
+  var lastRunId = null;
+  fetch('https://api.github.com/repos/'+GH_OWNER+'/'+GH_REPO+'/actions/runs?per_page=1&event=workflow_dispatch',{
+    headers:{'Accept':'application/vnd.github+json'}
+  }).then(function(r){return r.json()}).then(function(data){
+    var runs=data.workflow_runs||[];
+    if(runs.length) lastRunId = runs[0].id;
+    // Start polling for new runs
+    document.getElementById('modal-desc').textContent='如果操作成功，请回到此页面等待...';
+    document.getElementById('progress-fill').style.width='10%';
+    setSteps(2);
+    pollingTimer=setTimeout(function(){pollNewRun(lastRunId,0)},5000);
+  })['catch'](function(){
+    // Poll anyway without tracking last run
+    pollingTimer=setTimeout(function(){pollNewRun(null,0)},5000);
+  });
+}
+
+function pollNewRun(lastId,attempt){
+  fetch('https://api.github.com/repos/'+GH_OWNER+'/'+GH_REPO+'/actions/runs?per_page=5&event=workflow_dispatch',{
+    headers:{'Accept':'application/vnd.github+json'}
+  }).then(function(r){return r.json()}).then(function(data){
+    var runs=data.workflow_runs||[];
+    if(!runs.length||(lastId&&runs[0].id===lastId)){
+      // No new run yet
+      document.getElementById('progress-fill').style.width=Math.min(10+attempt*2,30)+'%';
+      document.getElementById('modal-desc').textContent='等待新的工作流启动... (已检测 '+(attempt+1)+' 次)';
+      if(attempt<60) pollingTimer=setTimeout(function(){pollNewRun(lastId,attempt+1)},5000);
+      else showError('检测超时，请手动检查<br><a href="https://github.com/'+GH_OWNER+'/'+GH_REPO+'/actions" target="_blank">查看 Actions</a>');
+      return;
+    }
+    // New run found!
+    checkRun(runs[0].id,0);
+  })['catch'](function(){
+    if(attempt<60) pollingTimer=setTimeout(function(){pollNewRun(lastId,attempt+1)},5000);
+    else showError('检测超时');
+  });
+}
+
+function checkRun(runId,attempt){
+  fetch('https://api.github.com/repos/'+GH_OWNER+'/'+GH_REPO+'/actions/runs/'+runId,{
+    headers:{'Accept':'application/vnd.github+json'}
+  }).then(function(r){return r.json()}).then(function(run){
+    var status=run.status||'unknown';    // queued, in_progress, completed
+    var conclusion=run.conclusion||'';   // success, failure, cancelled
+    var url=run.html_url||'';
+    var created=new Date(run.created_at).getTime();
+
+    if(status==='queued'){
+      setSteps(2);
+      document.getElementById('modal-title').textContent='⏳ 队列中...';
+      document.getElementById('modal-desc').textContent='工作流已加入队列，正在等待执行';
+      document.getElementById('progress-fill').style.width='30%';
+      pollingTimer=setTimeout(function(){checkRun(runId,attempt+1)},8000);
+    }
+    else if(status==='in_progress'){
+      setSteps(3);
+      document.getElementById('modal-title').textContent='🔄 爬虫运行中...';
+      document.getElementById('modal-desc').textContent='正在爬取各渠道最新数据并聚合';
+      document.getElementById('progress-fill').style.width='55%';
+      deleteRemainingTime(created);
+      pollingTimer=setTimeout(function(){checkRun(runId,attempt+1)},10000);
+    }
+    else if(status==='completed'){
+      clearInterval(elapsedTimer);
+      document.getElementById('progress-fill').style.width='100%';
+
+      if(conclusion==='success'){
+        setSteps(4);
+        document.getElementById('modal-icon').textContent='✅';
+        document.getElementById('modal-title').textContent='数据更新完成！';
+        document.getElementById('modal-desc').textContent='最新数据已推送到 GitHub，正在刷新页面...';
+        document.getElementById('modal-footer-text').innerHTML='<a href="'+url+'" target="_blank">查看运行日志</a>';
+        // Refresh data
+        setTimeout(function(){refreshData()},2000);
+      } else {
+        setSteps(4);
+        document.getElementById('step-complete').className='fail';
+        document.getElementById('modal-icon').textContent='❌';
+        document.getElementById('modal-title').textContent='更新失败';
+        document.getElementById('modal-desc').textContent=conclusion==='failure'?'有爬虫执行出错，但部分数据可能已更新':'工作流被取消';
+        document.getElementById('progress-fill').style.width='80%';
+        document.getElementById('modal-footer-text').innerHTML='<a href="'+url+'" target="_blank">查看运行日志</a><br><br><button class="btn" onclick="closeModal()">关闭</button>';
+        // Still try to refresh
+        setTimeout(function(){refreshData()},3000);
+      }
+    }
+  })['catch'](function(e){
+    if(attempt<30){
+      pollingTimer=setTimeout(function(){checkRun(runId,attempt+1)},10000);
+    } else {
+      showError('超时，请手动检查状态<br><a href="https://github.com/'+GH_OWNER+'/'+GH_REPO+'/actions" target="_blank">查看 Actions</a>');
+    }
+  });
+}
+
+function refreshData(){
+  Promise.all([fetch(PROD_URL).then(function(r){return r.text()}),fetch(CONS_URL).then(function(r){return r.text()})]).then(function(r){
+    var p=parseCSV(r[0]),c=parseCSV(r[1]);
+    PRODS=p.rows;CONS=c.rows;
+    document.getElementById('badge-products').textContent=PRODS.length;
+    document.getElementById('badge-consumables').textContent=CONS.length;
+    var n=new Date();
+    document.getElementById('last-update').innerHTML='数据版本：'+n.toLocaleDateString('zh-CN')+' '+n.toLocaleTimeString('zh-CN');
+    var t=ct;
+    ct='';switchTab(t);
+    document.getElementById('modal-desc').textContent='数据已刷新！共 '+PRODS.length+' 条产品，'+CONS.length+' 条耗材';
+    document.getElementById('modal-footer-text').innerHTML='<button class="btn primary" onclick="closeModal()">知道了</button>';
+    closeModalDelayed(3000);
+  })['catch'](function(){
+    document.getElementById('modal-desc').textContent='数据处理完成，但刷新页面数据失败，请手动刷新页面';
+    document.getElementById('modal-footer-text').innerHTML='<button class="btn primary" onclick="location.reload()">刷新页面</button>';
+  })['finally'](function(){
+    var btn=document.getElementById('update-btn');
+    btn.disabled=false;btn.innerHTML='⚡ 更新数据';
+  });
+}
+
+function updateElapsed(){
+  var sec=Math.floor((Date.now()-startTime)/1000);
+  var m=Math.floor(sec/60),s=sec%60;
+  document.getElementById('elapsed-time').textContent=
+    (m<10?'0'+m:m)+':'+(s<10?'0'+s:s);
+}
+
+function deleteRemainingTime(start){
+  // Show an approximate ETA based on already elapsed time
+  document.getElementById('elapsed-label').textContent='已等待（约剩余 1-3 分钟）';
+}
+
+function setSteps(step){
+  var ids=['step-trigger','step-queued','step-running','step-complete'];
+  for(var i=0;i<ids.length;i++){
+    var el=document.getElementById(ids[i]);
+    el.className='';
+    if(i+1<step)el.className='done';
+    else if(i+1===step)el.className='active';
+  }
+}
+
+function showError(msg){
+  clearInterval(elapsedTimer);
+  if(pollingTimer)clearTimeout(pollingTimer);
+  document.getElementById('modal-icon').textContent='⚠️';
+  document.getElementById('modal-title').textContent='更新失败';
+  document.getElementById('progress-fill').style.width='30%';
+  document.getElementById('modal-desc').innerHTML=msg;
+  document.getElementById('step-list').style.display='none';
+  document.getElementById('modal-footer-text').innerHTML='<button class="btn" onclick="closeModal()">关闭</button>';
+  var btn=document.getElementById('update-btn');
+  btn.disabled=false;btn.innerHTML='⚡ 更新数据';
+}
+
+function closeModal(){
+  document.getElementById('update-modal').classList.remove('active');
+  if(pollingTimer)clearTimeout(pollingTimer);
+  if(elapsedTimer)clearInterval(elapsedTimer);
+  document.getElementById('step-list').style.display='';
+  document.getElementById('update-btn').disabled=false;
+  document.getElementById('update-btn').innerHTML='⚡ 更新数据';
+}
+
+function closeModalDelayed(ms){
+  setTimeout(function(){
+    document.getElementById('update-modal').classList.remove('active');
+    document.getElementById('step-list').style.display='';
+  },ms);
+}
+
+init();
 </script>
 </body>
 </html>
