@@ -1,0 +1,548 @@
+{
+  "285": {
+    "name": "綠GV (金色弗吉尼亞)",
+    "brand_en": "GV",
+    "brand_cn": "金色弗吉尼亞",
+    "short_name": "綠GV Original",
+    "is_classic": true,
+    "is_safe": true,
+    "skus": [
+      {
+        "spec": "0.05kg/pack*1",
+        "price": 7.17,
+        "linePrice": 7.97,
+        "stock": 2832
+      },
+      {
+        "spec": "0.05kg/pack*5",
+        "price": 35.02,
+        "linePrice": 38.91,
+        "stock": 53
+      }
+    ],
+    "gross_weight": 0.06,
+    "total_stock": 2885
+  },
+  "1800": {
+    "name": "明亮黃 (金色弗吉尼亞)",
+    "brand_en": "GV",
+    "brand_cn": "金色弗吉尼亞",
+    "short_name": "明亮黃 Bright Yellow",
+    "is_classic": true,
+    "is_safe": true,
+    "skus": [
+      {
+        "spec": "0.05kg/pack*1",
+        "price": 7.17,
+        "linePrice": 7.97,
+        "stock": 0
+      },
+      {
+        "spec": "0.05kg/pack*5",
+        "price": 35.02,
+        "linePrice": 38.91,
+        "stock": 0
+      }
+    ],
+    "gross_weight": 0.06,
+    "total_stock": 0
+  },
+  "286": {
+    "name": "鼓牌原味",
+    "brand_en": "Drum",
+    "brand_cn": "鼓牌",
+    "short_name": "深鼓原味 Original",
+    "is_classic": true,
+    "is_safe": true,
+    "skus": [
+      {
+        "spec": "0.05kg/pack*1",
+        "price": 6.99,
+        "linePrice": 7.77,
+        "stock": 2816
+      },
+      {
+        "spec": "0.05kg/pack*5",
+        "price": 34.12,
+        "linePrice": 37.91,
+        "stock": 51
+      }
+    ],
+    "gross_weight": 0.06,
+    "total_stock": 2867
+  },
+  "289": {
+    "name": "鼓牌蔚藍",
+    "brand_en": "Drum",
+    "brand_cn": "鼓牌",
+    "short_name": "淺鼓蔚藍 Bright Blue",
+    "is_classic": true,
+    "is_safe": true,
+    "skus": [
+      {
+        "spec": "0.05kg/pack*1",
+        "price": 6.99,
+        "linePrice": 7.77,
+        "stock": 2888
+      },
+      {
+        "spec": "0.05kg/pack*5",
+        "price": 34.12,
+        "linePrice": 37.91,
+        "stock": 76
+      }
+    ],
+    "gross_weight": 0.06,
+    "total_stock": 2964
+  },
+  "2287": {
+    "name": "喇叭手 原味\n(帶紙)",
+    "brand_en": "Bugler",
+    "brand_cn": "喇叭手",
+    "short_name": "原味 Original",
+    "is_classic": true,
+    "is_safe": true,
+    "skus": [
+      {
+        "spec": "18.4g/pack*1",
+        "price": 5.19,
+        "linePrice": 5.77,
+        "stock": 2927
+      },
+      {
+        "spec": "18.4g/pack*6",
+        "price": 30.14,
+        "linePrice": 33.49,
+        "stock": 82
+      }
+    ],
+    "gross_weight": 0.035,
+    "total_stock": 3009
+  },
+  "2194": {
+    "name": "老霍本 黃",
+    "brand_en": "Old Holborn",
+    "brand_cn": "老霍本",
+    "short_name": "黃 Yellow",
+    "is_classic": true,
+    "is_safe": true,
+    "skus": [
+      {
+        "spec": "0.025kg/pack*1",
+        "price": 4.63,
+        "linePrice": 5.14,
+        "stock": 4686
+      },
+      {
+        "spec": "0.025kg/pack*10",
+        "price": 44.5,
+        "linePrice": 49.44,
+        "stock": 423
+      }
+    ],
+    "gross_weight": 0.036,
+    "total_stock": 5109
+  },
+  "2696": {
+    "name": "老霍本 白金",
+    "brand_en": "Old Holborn",
+    "brand_cn": "老霍本",
+    "short_name": "白金 Blonde",
+    "is_classic": true,
+    "is_safe": true,
+    "skus": [
+      {
+        "spec": "0.025kg/pack*1",
+        "price": 4.63,
+        "linePrice": 5.14,
+        "stock": 0
+      }
+    ],
+    "gross_weight": 0.036,
+    "total_stock": 0
+  },
+  "2467": {
+    "name": "美國精神 原味藍",
+    "brand_en": "Amer.Spirit",
+    "brand_cn": "美國精神",
+    "short_name": "藍 Blue",
+    "is_classic": true,
+    "is_safe": true,
+    "skus": [
+      {
+        "spec": "0.03kg/pack*1",
+        "price": 6.53,
+        "linePrice": 7.25,
+        "stock": 0
+      },
+      {
+        "spec": "0.03kg/pack*5",
+        "price": 31.83,
+        "linePrice": 35.37,
+        "stock": 0
+      }
+    ],
+    "gross_weight": 0.04,
+    "total_stock": 0
+  },
+  "2708": {
+    "name": "美國精神 原味黃",
+    "brand_en": "Amer.Spirit",
+    "brand_cn": "美國精神",
+    "short_name": "黃 Yellow",
+    "is_classic": true,
+    "is_safe": true,
+    "skus": [
+      {
+        "spec": "0.03kg/pack*1",
+        "price": 6.53,
+        "linePrice": 7.25,
+        "stock": 2937
+      },
+      {
+        "spec": "0.03kg/pack*5",
+        "price": 31.83,
+        "linePrice": 35.37,
+        "stock": 88
+      }
+    ],
+    "gross_weight": 0.04,
+    "total_stock": 3025
+  },
+  "791": {
+    "name": "黑船長 弗吉尼亞(手卷絲)",
+    "brand_en": "CB",
+    "brand_cn": "黑船長",
+    "short_name": "弗吉尼亞 Virginia",
+    "is_classic": true,
+    "is_safe": true,
+    "skus": [
+      {
+        "spec": "0.05kg/pack",
+        "price": 5.7,
+        "linePrice": 6.33,
+        "stock": 2911
+      },
+      {
+        "spec": "0.05kg/pack*5",
+        "price": 27.68,
+        "linePrice": 30.76,
+        "stock": 89
+      }
+    ],
+    "gross_weight": 0.06,
+    "total_stock": 3000
+  },
+  "792": {
+    "name": "黑船長 明亮弗吉尼亞(手卷絲)",
+    "brand_en": "CB",
+    "brand_cn": "黑船長",
+    "short_name": "明亮弗吉尼亞 Bright",
+    "is_classic": false,
+    "is_safe": true,
+    "skus": [
+      {
+        "spec": "0.05kg/pack",
+        "price": 5.7,
+        "linePrice": 6.33,
+        "stock": 1935
+      },
+      {
+        "spec": "0.05kg/pack*5",
+        "price": 27.68,
+        "linePrice": 30.76,
+        "stock": 89
+      }
+    ],
+    "gross_weight": 0.06,
+    "total_stock": 2024
+  },
+  "2155": {
+    "name": "COLTS 香草 (帶紙)",
+    "brand_en": "Colts",
+    "brand_cn": "COLTS",
+    "short_name": "香草 Vanilla",
+    "is_classic": true,
+    "is_safe": true,
+    "skus": [
+      {
+        "spec": "0.03kg/pack*1",
+        "price": 4.28,
+        "linePrice": 4.76,
+        "stock": 2953
+      },
+      {
+        "spec": "0.03kg/pack*5",
+        "price": 20.57,
+        "linePrice": 22.85,
+        "stock": 89
+      }
+    ],
+    "gross_weight": 0.05,
+    "total_stock": 3042
+  },
+  "2148": {
+    "name": "COLTS 蘋果肉桂\n(帶紙)",
+    "brand_en": "Colts",
+    "brand_cn": "COLTS",
+    "short_name": "蘋果肉桂 Apple&Cinnamon",
+    "is_classic": false,
+    "is_safe": true,
+    "skus": [
+      {
+        "spec": "0.03kg/pack*1",
+        "price": 4.28,
+        "linePrice": 4.76,
+        "stock": 984
+      },
+      {
+        "spec": "0.03kg/pack*5",
+        "price": 20.57,
+        "linePrice": 22.85,
+        "stock": 99
+      }
+    ],
+    "gross_weight": 0.05,
+    "total_stock": 1083
+  },
+  "2157": {
+    "name": "巴厘絲 優質弗吉尼亞\n(帶紙)",
+    "brand_en": "BS",
+    "brand_cn": "巴厘絲",
+    "short_name": "優質弗吉尼亞 Premium",
+    "is_classic": true,
+    "is_safe": true,
+    "skus": [
+      {
+        "spec": "0.04kg/pack*1",
+        "price": 6.39,
+        "linePrice": 7.1,
+        "stock": 1909
+      },
+      {
+        "spec": "0.04kg/pack*5",
+        "price": 31.04,
+        "linePrice": 34.49,
+        "stock": 44
+      }
+    ],
+    "gross_weight": 0.058,
+    "total_stock": 1953
+  },
+  "2158": {
+    "name": "巴厘絲 濃郁弗吉尼亞\n(帶紙)",
+    "brand_en": "BS",
+    "brand_cn": "巴厘絲",
+    "short_name": "濃郁弗吉尼亞 Rich",
+    "is_classic": false,
+    "is_safe": true,
+    "skus": [
+      {
+        "spec": "0.04kg/pack*1",
+        "price": 6.39,
+        "linePrice": 7.1,
+        "stock": 1885
+      },
+      {
+        "spec": "0.04kg/pack*5",
+        "price": 31.04,
+        "linePrice": 34.49,
+        "stock": 39
+      }
+    ],
+    "gross_weight": 0.058,
+    "total_stock": 1924
+  },
+  "2307": {
+    "name": "馬霸選擇#01 原味\n(帶紙)",
+    "brand_en": "Choice",
+    "brand_cn": "馬霸選擇",
+    "short_name": "#01 原味 Original",
+    "is_classic": true,
+    "is_safe": true,
+    "skus": [
+      {
+        "spec": "0.03kg/pack*1",
+        "price": 4.17,
+        "linePrice": 4.63,
+        "stock": 341
+      },
+      {
+        "spec": "0.03kg/pack*5",
+        "price": 19.94,
+        "linePrice": 22.15,
+        "stock": 16
+      }
+    ],
+    "gross_weight": 0.05,
+    "total_stock": 357
+  },
+  "2296": {
+    "name": "馬霸選擇#05 芳香\n(帶紙)",
+    "brand_en": "Choice",
+    "brand_cn": "馬霸選擇",
+    "short_name": "#05 芳香 Aromatic",
+    "is_classic": false,
+    "is_safe": true,
+    "skus": [
+      {
+        "spec": "0.03kg/pack*1",
+        "price": 4.17,
+        "linePrice": 4.63,
+        "stock": 775
+      },
+      {
+        "spec": "0.03kg/pack*5",
+        "price": 19.94,
+        "linePrice": 22.15,
+        "stock": 49
+      }
+    ],
+    "gross_weight": 0.05,
+    "total_stock": 824
+  },
+  "2479": {
+    "name": "馬霸手捲 半乾手捲\n(帶紙)",
+    "brand_en": "MB",
+    "brand_cn": "馬霸手捲",
+    "short_name": "半乾 Halfzware",
+    "is_classic": true,
+    "is_safe": true,
+    "skus": [
+      {
+        "spec": "0.03kg/pack*1",
+        "price": 4.44,
+        "linePrice": 4.93,
+        "stock": 456
+      },
+      {
+        "spec": "0.03kg/pack*5",
+        "price": 21.33,
+        "linePrice": 23.7,
+        "stock": 12
+      }
+    ],
+    "gross_weight": 0.05,
+    "total_stock": 468
+  },
+  "2480": {
+    "name": "馬霸手捲 弗吉尼亞混合\n(帶紙)",
+    "brand_en": "MB",
+    "brand_cn": "馬霸手捲",
+    "short_name": "弗吉尼亞混合 Virginia",
+    "is_classic": false,
+    "is_safe": true,
+    "skus": [
+      {
+        "spec": "0.03kg/pack*1",
+        "price": 4.44,
+        "linePrice": 4.93,
+        "stock": 0
+      },
+      {
+        "spec": "0.03kg/pack*5",
+        "price": 21.33,
+        "linePrice": 23.7,
+        "stock": 0
+      }
+    ],
+    "gross_weight": 0.05,
+    "total_stock": 0
+  },
+  "2457": {
+    "name": "阿姆斯特丹 誠實\n(帶紙)",
+    "brand_en": "Ams",
+    "brand_cn": "阿姆斯特丹",
+    "short_name": "誠實 Honest",
+    "is_classic": true,
+    "is_safe": true,
+    "skus": [
+      {
+        "spec": "0.025kg/pack*1",
+        "price": 3.74,
+        "linePrice": 4.16,
+        "stock": 570
+      },
+      {
+        "spec": "0.025kg/pack*5",
+        "price": 17.87,
+        "linePrice": 19.85,
+        "stock": 27
+      }
+    ],
+    "gross_weight": 0.043,
+    "total_stock": 597
+  },
+  "2463": {
+    "name": "PS NUMBER 94\n土耳其出口\n(袋裝 帶紙)",
+    "brand_en": "PS",
+    "brand_cn": "彼得斯托克比",
+    "short_name": "#94 土耳其 Turkish",
+    "is_classic": true,
+    "is_safe": true,
+    "skus": [
+      {
+        "spec": "0.035kg/pack*1",
+        "price": 5.53,
+        "linePrice": 6.14,
+        "stock": 147
+      },
+      {
+        "spec": "0.035kg/pack*5",
+        "price": 26.81,
+        "linePrice": 29.79,
+        "stock": 19
+      }
+    ],
+    "gross_weight": 0.05,
+    "total_stock": 166
+  },
+  "2464": {
+    "name": "PS NUMBER 96\n倫敦出口\n(袋裝 帶紙)",
+    "brand_en": "PS",
+    "brand_cn": "彼得斯托克比",
+    "short_name": "#96 倫敦 London",
+    "is_classic": true,
+    "is_safe": true,
+    "skus": [
+      {
+        "spec": "0.035kg/pack*1",
+        "price": 5.53,
+        "linePrice": 6.14,
+        "stock": 122
+      },
+      {
+        "spec": "0.035kg/pack*5",
+        "price": 26.81,
+        "linePrice": 29.79,
+        "stock": 19
+      }
+    ],
+    "gross_weight": 0.05,
+    "total_stock": 141
+  },
+  "2465": {
+    "name": "PS NUMBER 95\n斯德哥爾摩 混合\n(袋裝 帶紙)",
+    "brand_en": "PS",
+    "brand_cn": "彼得斯托克比",
+    "short_name": "#95 斯德哥爾摩 Stockholm",
+    "is_classic": true,
+    "is_safe": true,
+    "skus": [
+      {
+        "spec": "0.035kg/pack*1",
+        "price": 5.53,
+        "linePrice": 6.14,
+        "stock": 311
+      },
+      {
+        "spec": "0.035kg/pack*5",
+        "price": 26.81,
+        "linePrice": 29.79,
+        "stock": 18
+      }
+    ],
+    "gross_weight": 0.05,
+    "total_stock": 329
+  }
+}
