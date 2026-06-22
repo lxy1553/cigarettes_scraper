@@ -1,0 +1,44 @@
+name: 自动爬虫 & 数据更新
+
+on:
+  workflow_dispatch:  # 手动触发
+  schedule:
+    - cron: '0 2,14 * * *'  # 每天 UTC 2:00 和 14:00（北京时间 10:00 和 22:00）
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 安装 Python 依赖
+        run: |
+          pip install requests pycryptodome
+
+      - name: 爬取 PipeUncle（茄营）
+        working-directory: ./scripts/pipeuncle
+        run: python3 scrape_hand_rolled.py && python3 scrape_all_except_hand_rolled.py
+        continue-on-error: true
+
+      - name: 爬取 华盛电商（huashengyansi.cv）
+        working-directory: ./scripts/huasheng
+        run: python3 scrape_huashengyansi.py
+        continue-on-error: true
+
+      - name: 聚合数据 → all_cigarette.csv / all_consumables.csv
+        run: python3 scripts/aggregate.py
+
+      - name: 提交 & 推送更新
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add data/aggregated/
+          git add data/pipeuncle/
+          git add data/huasheng/
+          # 只在有变更时提交
+          git diff --quiet && git diff --staged --quiet || \
+            (git commit -m "auto: 爬虫数据更新 $(date +'%Y-%m-%d %H:%M')" && git push)
