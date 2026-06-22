@@ -12,8 +12,9 @@ import requests
 import urllib3
 urllib3.disable_warnings()
 
+_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 BASE_URL = "https://ribenyan.com"
-OUTPUT_DIR = os.path.dirname(os.path.abspath(__file__))
+OUTPUT_DIR = os.path.abspath(os.path.join(_SCRIPT_DIR, "../../data/ribenyan"))
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
     "Accept": "text/html,application/json,application/xhtml+xml,*/*",
@@ -21,7 +22,7 @@ HEADERS = {
 }
 
 # Try to import decrypt if available (pipeuncle-style AES encryption)
-sys.path.insert(0, OUTPUT_DIR)
+sys.path.insert(0, os.path.join(_SCRIPT_DIR, "../utils"))
 try:
     from decrypt import api_get as encrypted_api_get
     HAS_DECRYPT = True
@@ -398,8 +399,8 @@ def main():
             products.append({"name": p, "permalink": p})
 
     # Step 4: Save
-    csv_path = os.path.join(OUTPUT_DIR, "ribenyan_products.csv")
-    json_path = os.path.join(OUTPUT_DIR, "ribenyan_products.json")
+    csv_path = os.path.join(OUTPUT_DIR, "products.csv")
+    json_path = os.path.join(OUTPUT_DIR, "products.json")
 
     if products:
         fieldnames = list(products[0].keys())

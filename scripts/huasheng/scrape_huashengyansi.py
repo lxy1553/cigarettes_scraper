@@ -7,8 +7,9 @@ import os
 import time
 import requests
 
+_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 BASE_URL = "https://www.huashengyansi.cv"
-OUTPUT_DIR = os.path.dirname(os.path.abspath(__file__))
+OUTPUT_DIR = os.path.abspath(os.path.join(_SCRIPT_DIR, "../../data/huasheng"))
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
 }
@@ -136,7 +137,7 @@ def main():
     products = [extract_product_data(p) for p in raw_products]
 
     # Save CSV
-    csv_path = os.path.join(OUTPUT_DIR, "huashengyansi_products.csv")
+    csv_path = os.path.join(OUTPUT_DIR, "products.csv")
     fieldnames = [
         "id", "sku", "name", "slug", "permalink", "type",
         "categories",
@@ -155,7 +156,7 @@ def main():
     print(f"\nCSV saved: {csv_path}")
 
     # Save JSON
-    json_path = os.path.join(OUTPUT_DIR, "huashengyansi_products.json")
+    json_path = os.path.join(OUTPUT_DIR, "products.json")
     with open(json_path, "w", encoding="utf-8") as f:
         json.dump(products, f, ensure_ascii=False, indent=2)
     print(f"JSON saved: {json_path}")

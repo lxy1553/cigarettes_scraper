@@ -1,5 +1,5 @@
 """
-Scrape ALL products from pipeuncle.com EXCEPT 手卷丝 (hand-rolled tobacco).
+Scrape all hand-rolled tobacco (手卷丝) products from pipeuncle.com and generate a CSV table.
 """
 import csv
 import json
@@ -9,26 +9,12 @@ import sys
 import time
 import requests
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.join(_SCRIPT_DIR, "../utils"))
 from decrypt import api_get
 
 BASE_URL = "https://www.pipeuncle.com"
-OUTPUT_DIR = os.path.dirname(os.path.abspath(__file__))
-
-# Categories to scrape (all except 手卷丝 and 手卷丝組合)
-CATEGORIES = {
-    # Top-level categories that include all their subcategories
-    44: "雪茄",
-    151: "古巴雪茄",
-    30: "煙斗絲",
-    144: "雪茄組合",
-    79: "煙斗絲組合",
-    109: "新手精選",
-    139: "拍賣專場",
-}
-
-# 手卷丝 related category IDs to exclude
-HAND_ROLLED_IDS = {70, 71, 72, 80, 119, 146, 162, 179, 181, 182, 183, 184, 185, 192, 193, 196, 197}
+OUTPUT_DIR = os.path.abspath(os.path.join(_SCRIPT_DIR, "../../data/pipeuncle"))
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
@@ -49,7 +35,7 @@ def extract_specs(detail: dict) -> dict:
     """Extract structured specs from product detail."""
     specs = {}
 
-    # Extract spec values
+    # Extract spec values (weight per pack, etc.)
     spec_values = detail.get("specValue", [])
     if spec_values:
         for sv in spec_values:
@@ -64,6 +50,7 @@ def extract_specs(detail: dict) -> dict:
         name_info = attr.get("name", {})
         value_info = attr.get("value", {})
         unit_info = attr.get("unit", {})
+        # Prefer zh_cn name
         attr_name = name_info.get("zh_cn", name_info.get("en", ""))
         attr_value = value_info.get("zh_cn", value_info.get("en", ""))
         attr_unit = unit_info.get("zh_cn", unit_info.get("en", ""))
@@ -101,92 +88,95 @@ def extract_specs(detail: dict) -> dict:
     return specs
 
 
-def scrape_all_products() -> list:
-    """Scrape all products except hand-rolled tobacco."""
+def scrape_all_hand_rolled() -> list:
+    """Scrape all hand-rolled tobacco products."""
 
-    seen_ids = set()
-    all_products = []
+    # Step 1: Get base product list from category 70 (手卷丝)
+    print("Fetching product list from category 70 (手卷丝)...")
+    result = api_get(f"{BASE_URL}/api/goods/limit", {
+        "categoryId": 70,
+        "limit": 100,
+        "type": 1
+    })
+    products = result.get("data", [])
+    print(f"  Got {len(products)} products from main category")
 
-    # Step 1: Get products from each target category
-    for cat_id, cat_name in CATEGORIES.items():
-        print(f"\nFetching products from {cat_name} (ID={cat_id})...")
+    # Track seen IDs
+    seen_ids = {p["id"] for p in products}
+
+    # Step 2: Also try subcategories for any additional products
+    subcategories = {
+        72: "喇叭手", 80: "金弗吉尼亚", 182: "老霍本", 71: "鼓牌",
+        193: "美国精神", 119: "黑船长", 197: "红田RF", 162: "小马牌克鲁斯",
+        183: "马霸", 179: "巴厘丝", 192: "彼得斯托克拜", 185: "CHOICE选择",
+        184: "阿姆斯特丹", 196: "史丹利", 181: "加维霍格斯"
+    }
+
+    for cid, cname in subcategories.items():
         result = api_get(f"{BASE_URL}/api/goods/limit", {
-            "categoryId": cat_id,
-            "limit": 2000,
+            "categoryId": cid,
+            "limit": 100,
             "type": 1
         })
-        products = result.get("data", [])
+        sub_products = result.get("data", [])
         new_count = 0
-        for p in products:
-            pid = p["id"]
-            if pid not in seen_ids:
-                # Double-check: skip if this product belongs to 手卷丝 categories
-                # We'll do a deeper check after getting detail
-                seen_ids.add(pid)
-                all_products.append(p)
+        for p in sub_products:
+            if p["id"] not in seen_ids:
+                seen_ids.add(p["id"])
+                products.append(p)
                 new_count += 1
-        print(f"  Got {len(products)} products, {new_count} new (total unique: {len(all_products)})")
+        if new_count > 0:
+            print(f"  +{new_count} new from {cname} (ID={cid})")
 
-    print(f"\n{'=' * 70}")
-    print(f"Total unique products to scrape: {len(all_products)}")
-    print(f"{'=' * 70}")
+    # Step 3: Also check combo category (手卷丝组合)
+    result = api_get(f"{BASE_URL}/api/goods/limit", {
+        "categoryId": 146,
+        "limit": 100,
+        "type": 1
+    })
+    combo_products = result.get("data", [])
+    for p in combo_products:
+        if p["id"] not in seen_ids:
+            seen_ids.add(p["id"])
+            products.append(p)
+            print(f"  +1 new from 手卷丝组合")
 
-    # Step 2: Get detailed info for each product
+    print(f"\nTotal unique products to scrape: {len(products)}")
+
+    # Step 4: Get detailed info for each product
     detailed_products = []
-    skipped_hand_rolled = 0
-
-    for i, product in enumerate(all_products):
+    for i, product in enumerate(products):
         pid = product["id"]
         name = product["name"].replace("\n", " ").strip()
-        print(f"[{i+1}/{len(all_products)}] {name} (ID={pid})")
+        print(f"[{i+1}/{len(products)}] {name} (ID={pid})")
 
         detail = get_product_detail(pid)
-        # Handle case where API returns a list instead of dict
-        if isinstance(detail, list):
-            detail = {}
-
-        # Skip if product belongs to 手卷丝 categories
-        cat_ids = detail.get("categoryId", []) if detail else []
-        if cat_ids and any(cid in HAND_ROLLED_IDS for cid in cat_ids):
-            print(f"    SKIPPING: belongs to 手卷丝 (cat IDs: {cat_ids})")
-            skipped_hand_rolled += 1
-            continue
-
         specs = extract_specs(detail) if detail else {}
+        time.sleep(0.3)  # Rate limiting
 
         # Determine category name from category IDs
-        cat_name = "其他"
-        for cid in cat_ids:
-            if cid in CATEGORIES:
-                cat_name = CATEGORIES[cid]
-                break
+        cat_ids = detail.get("categoryId", [])
+        cat_name = "手卷丝"
+        if 146 in cat_ids:
+            cat_name = "手卷丝组合"
 
-        # Get spec values
-        spec_values = detail.get("specValueList", []) if detail else []
+        # Get spec values for weight
+        spec_values = detail.get("specValueList", [])
         spec_str = ""
         if spec_values:
             for sv in spec_values:
-                if isinstance(sv, dict) and sv.get("skuValueArr"):
+                if sv.get("skuValueArr"):
                     spec_str = sv["skuValueArr"]
                     break
 
         # Get SKU details
         sku_details = []
-        for sv in (detail.get("specValueList", []) if detail else []):
-            if isinstance(sv, dict):
-                sku_details.append({
-                    "spec": sv.get("skuValueArr", ""),
-                    "price_usd": sv.get("price", ""),
-                    "stock": sv.get("stock", ""),
-                })
-
-        price_usd = product.get("price", "")
-        # Try to get price from SKU if not in product
-        if not price_usd and detail and detail.get("specValueList"):
-            for sv in detail["specValueList"]:
-                if isinstance(sv, dict) and sv.get("price"):
-                    price_usd = sv["price"]
-                    break
+        for sv in detail.get("specValueList", []):
+            sku_details.append({
+                "spec": sv.get("skuValueArr", ""),
+                "price_usd": sv.get("price", ""),
+                "stock": sv.get("stock", ""),
+            })
 
         merged = {
             # Basic info
@@ -197,7 +187,7 @@ def scrape_all_products() -> list:
             "brand": "",
 
             # Pricing
-            "price_usd": price_usd,
+            "price_usd": product.get("price", ""),
             "price_rmb": product.get("aboutRmb", ""),
             "lineation_price": product.get("lineationPrice", ""),
 
@@ -227,25 +217,23 @@ def scrape_all_products() -> list:
         }
 
         detailed_products.append(merged)
-        time.sleep(0.25)
 
-    print(f"\nSkipped {skipped_hand_rolled} hand-rolled tobacco products during detail fetch")
     return detailed_products
 
 
 def main():
     print("=" * 70)
-    print("PIPEUNCLE.COM - ALL Products (except 手卷丝) Scraper")
+    print("PIPEUNCLE.COM - Hand-Rolled Tobacco (手卷丝) Scraper")
     print("=" * 70)
 
-    products = scrape_all_products()
+    products = scrape_all_hand_rolled()
 
     print(f"\n{'=' * 70}")
     print(f"Scraping complete! Total products: {len(products)}")
     print(f"{'=' * 70}")
 
     # Save as CSV
-    csv_path = os.path.join(OUTPUT_DIR, "pipeuncle_all_except_hand_rolled.csv")
+    csv_path = os.path.join(OUTPUT_DIR, "hand_rolled.csv")
     fieldnames = [
         "id", "code", "name", "category", "brand",
         "spec", "weight_kg",
@@ -262,7 +250,7 @@ def main():
     print(f"\nCSV saved to: {csv_path}")
 
     # Save as JSON
-    json_path = os.path.join(OUTPUT_DIR, "pipeuncle_all_except_hand_rolled.json")
+    json_path = os.path.join(OUTPUT_DIR, "hand_rolled.json")
     with open(json_path, "w", encoding="utf-8") as f:
         json.dump(products, f, ensure_ascii=False, indent=2)
     print(f"JSON saved to: {json_path}")
@@ -276,33 +264,15 @@ def main():
     print(f"  Total: {len(products)}")
 
     # Price range
-    prices = []
-    for p in products:
-        try:
-            price = float(p["price_usd"])
-            if price > 0:
-                prices.append(price)
-        except (ValueError, TypeError):
-            pass
+    prices = [float(p["price_usd"]) for p in products if p["price_usd"]]
     if prices:
-        print(f"  Price range: ${min(prices):.2f} - ${max(prices):.2f} USD")
+        print(f"  Price range: \${min(prices):.2f} - \${max(prices):.2f} USD")
 
-    # By category
-    categories = {}
-    for p in products:
-        cat = p.get("category", "未知")
-        categories[cat] = categories.get(cat, 0) + 1
-    if categories:
-        print(f"\n  分类分布:")
-        for k, v in sorted(categories.items(), key=lambda x: -x[1]):
-            print(f"    {k}: {v}")
-
-    # By category_type
+    # By brand/spec
     specs = {}
     for p in products:
-        s = p.get("category_type", "")
-        if s:
-            specs[s] = specs.get(s, 0) + 1
+        s = p.get("category_type", "未知")
+        specs[s] = specs.get(s, 0) + 1
     if specs:
         print(f"\n  类别分布:")
         for k, v in sorted(specs.items(), key=lambda x: -x[1]):
