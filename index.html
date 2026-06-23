@@ -40,6 +40,19 @@
   .tag-套餐 { background: #e0f2f1; color: #00695c; }
   .no-weight { color: #bbb; font-style: italic; }
   .empty { text-align: center; padding: 40px; color: #999; }
+  /* AI panel */
+  .ai-panel { margin-top: 20px; background: #fff; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,.1); overflow: hidden; }
+  .ai-panel summary { padding: 10px 14px; cursor: pointer; font-weight: 600; font-size: 14px; background: #fafafa; }
+  .ai-panel summary:hover { background: #f0f0f0; }
+  .ai-body { padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+  .ai-body textarea { width: 100%; min-height: 80px; border: 1px solid #ddd; border-radius: 6px; padding: 8px; font-size: 13px; resize: vertical; }
+  .ai-body .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .ai-body input[type=text] { flex: 1; min-width: 200px; padding: 6px 8px; border: 1px solid #ddd; border-radius: 6px; font-size: 12px; }
+  .ai-body button { padding: 6px 16px; background: #263238; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; }
+  .ai-body button:hover { background: #37474f; }
+  .ai-body button:disabled { opacity: .5; cursor: not-allowed; }
+  .ai-body .response { background: #f5f5f5; border-radius: 6px; padding: 10px; font-size: 13px; line-height: 1.6; white-space: pre-wrap; max-height: 400px; overflow-y: auto; display: none; }
+  .ai-body .hint { font-size: 11px; color: #999; }
   @media (max-width: 768px) {
     body { padding: 10px; }
     table { font-size: 11px; }
@@ -74,6 +87,19 @@
 <div style="overflow-x:auto">
 <table><thead id="thead"></thead><tbody id="tbody"></tbody></table>
 </div>
+
+<details class="ai-panel">
+<summary>🤖 AI 分析（接入 DeepSeek）</summary>
+<div class="ai-body">
+  <div class="row">
+    <input type="text" id="aiKey" placeholder="输入你的 DeepSeek API Key..." />
+    <button onclick="askAI()" id="aiBtn">发送</button>
+  </div>
+  <textarea id="aiQuery" placeholder="例如：推荐 20支成本最低的手卷丝品牌，预算每包¥50以内..."></textarea>
+  <div id="aiResponse" class="response"></div>
+  <div class="hint">💡 分析时会自动附带当前筛选产品的数据摘要作为上下文</div>
+</div>
+</details>
 
 <script>
 let products = [], filteredCache = [];
@@ -200,6 +226,57 @@ function render() {
       <td>${p.link?'<a href="'+p.link+'" target="_blank">🔗</a>':''}</td>
     </tr>`;
   }).join('') : '<tr><td colspan="13" class="empty">无匹配产品</td></tr>';
+}
+
+async function askAI() {
+  const key = document.getElementById('aiKey').value.trim();
+  const query = document.getElementById('aiQuery').value.trim();
+  if (!key) { alert('请输入 DeepSeek API Key'); return; }
+  if (!query) { alert('请输入问题'); return; }
+
+  const btn = document.getElementById('aiBtn');
+  const resp = document.getElementById('aiResponse');
+  btn.disabled = true; btn.textContent = '思考中...';
+  resp.style.display = 'block'; resp.textContent = '🤔 正在分析...';
+
+  // 构建上下文
+  const data = filtered();
+  const chs = [...new Set(data.map(p=>p.channel))].map(c=>CH_NAMES[c]||c);
+  const brands = [...new Set(data.map(p=>p.brand))].filter(Boolean);
+  const types = [...new Set(data.map(p=>p.type))].filter(Boolean);
+  const withWeight = data.filter(p=>p.weight>0).sort((a,b)=>a.cost20-b.cost20).slice(0,10);
+
+  let context = `当前筛选数据：共 ${data.length} 条产品\n`;
+  context += `渠道：${chs.join('、')}\n`;
+  context += `品牌：${brands.length} 个\n`;
+  context += `产品大类：${types.join('、')}\n\n`;
+  context += `20支成本最低 TOP5：\n`;
+  withWeight.slice(0,5).forEach(p => {
+    context += `  ${p.name} | 品牌=${p.brand} | ${p.weight}g | 含税¥${p.tax} | 克¥${p.perG}/g | 20支¥${p.cost20}\n`;
+  });
+  context += `\n以下是用户问题：\n${query}`;
+
+  try {
+    const res = await fetch('https://api.deepseek.com/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        messages: [
+          { role: 'system', content: '你是手卷烟丝购买顾问，根据用户提供的价格数据给出推荐方案。回答简洁实用，用中文。' },
+          { role: 'user', content: context }
+        ],
+        temperature: 0.7,
+        max_tokens: 1024,
+      })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+    resp.textContent = data.choices?.[0]?.message?.content || '无回复';
+  } catch (e) {
+    resp.textContent = '❌ 请求失败：' + e.message;
+  }
+  btn.disabled = false; btn.textContent = '发送';
 }
 
 function sortTable(col) {
