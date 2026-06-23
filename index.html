@@ -74,6 +74,19 @@
 <div class="stats" id="stats"></div>
 <div class="no-warn" id="noWarn">⚠️ 部分产品缺少重量数据，无法计算克单价和20支成本</div>
 
+<details class="ai-panel" id="aiPanel" open>
+<summary>🤖 AI 分析（接入 DeepSeek）</summary>
+<div class="ai-body">
+  <div class="row">
+    <input type="text" id="aiKey" placeholder="输入你的 DeepSeek API Key..." value="" />
+    <button onclick="askAI()" id="aiBtn">发送</button>
+  </div>
+  <textarea id="aiQuery" placeholder="例如：推荐 20支成本最低的手卷丝品牌，预算每包¥50以内..."></textarea>
+  <div id="aiResponse" class="response"></div>
+  <div class="hint">💡 分析时会自动附带当前筛选产品的数据摘要作为上下文</div>
+</div>
+</details>
+
 <div class="filters">
   <select id="filterChannel" onchange="render()"><option value="">全部渠道</option></select>
   <select id="filterBrand" onchange="render()"><option value="">全部品牌</option></select>
@@ -87,19 +100,6 @@
 <div style="overflow-x:auto">
 <table><thead id="thead"></thead><tbody id="tbody"></tbody></table>
 </div>
-
-<details class="ai-panel">
-<summary>🤖 AI 分析（接入 DeepSeek）</summary>
-<div class="ai-body">
-  <div class="row">
-    <input type="text" id="aiKey" placeholder="输入你的 DeepSeek API Key..." />
-    <button onclick="askAI()" id="aiBtn">发送</button>
-  </div>
-  <textarea id="aiQuery" placeholder="例如：推荐 20支成本最低的手卷丝品牌，预算每包¥50以内..."></textarea>
-  <div id="aiResponse" class="response"></div>
-  <div class="hint">💡 分析时会自动附带当前筛选产品的数据摘要作为上下文</div>
-</div>
-</details>
 
 <script>
 let products = [], filteredCache = [];
