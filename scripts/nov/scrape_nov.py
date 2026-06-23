@@ -22,9 +22,12 @@ HEADERS = {"Referer": f"{BASE_URL}/"}
 OZ_TO_G = 28.3495
 
 
-def fetch_all_products() -> list:
-    """Fetch all Bulk Pipe Tobacco products via Searchanise API with pagination."""
+def fetch_all_products() -> tuple:
+    """Fetch all Bulk Pipe Tobacco products via Searchanise API with pagination.
+    Returns (filtered_products, raw_api_data).
+    """
     all_products = []
+    raw_api_data = []  # store unfiltered API responses
     start_index = 0
     page_size = 200
 
@@ -36,6 +39,9 @@ def fetch_all_products() -> list:
             "startIndex": start_index,
             "items": "true",
             "categories": "true",
+            "pages": "true",
+            "suggestions": "true",
+            "queryCorrection": "true",
         })
         url = f"{SEARCHANISE_URL}?{params}"
         print(f"Fetching offset {start_index}...")
@@ -47,6 +53,9 @@ def fetch_all_products() -> list:
         items = data.get("items", [])
         if not items:
             break
+
+        # Save raw response metadata + items
+        raw_api_data.append(data)
 
         for item in items:
             cat = item.get("categories", "")
@@ -60,7 +69,7 @@ def fetch_all_products() -> list:
         time.sleep(0.5)
 
     print(f"\nTotal bulk pipe tobacco products: {len(all_products)}")
-    return all_products
+    return all_products, raw_api_data
 
 
 def parse_weight_from_options(options: dict) -> tuple:
@@ -230,18 +239,20 @@ def main():
     print("NOVA PIPES & TOBACCO - Bulk Pipe Tobacco Scraper")
     print("=" * 70)
 
-    raw = fetch_all_products()
+    raw, raw_api = fetch_all_products()
     products = extract_products(raw)
 
     if not products:
         print("No bulk pipe tobacco products found!")
         return
 
-    # Save
+    # Save processed CSV
     csv_path = os.path.join(OUTPUT_DIR, "products.csv")
-    json_path = os.path.join(OUTPUT_DIR, "products.json")
     save_csv(products, csv_path)
-    save_json(products, json_path)
+
+    # Save raw API response as JSON (unfiltered)
+    json_path = os.path.join(OUTPUT_DIR, "products.json")
+    save_json(raw_api, json_path)
 
     # Summary
     print(f"\n{'=' * 70}")
