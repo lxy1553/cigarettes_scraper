@@ -223,14 +223,8 @@ def _pipeuncle(items):
             for variant in sku_details:
                 row = dict(base)
                 row["规格"] = variant.get("spec", base["规格"])
-                try:
-                    v_price = float(variant.get("price_usd", 0))
-                    row["原始价格"] = v_price
-                    row["原始币种"] = "USD"
-                    row["美元价格"] = v_price
-                    row["人民币价格"] = _usd_to_cny(v_price)
-                except (ValueError, TypeError):
-                    pass
+                # pipeuncle 以 RMB 标价，variant 的 price_usd 仅作参考
+                # 保持 base 的 RMB 价格不变
                 # variant 重量：优先从 spec 取
                 v_spec = variant.get("spec", "")
                 if v_spec:
