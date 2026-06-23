@@ -469,13 +469,22 @@ def main():
             if extracted_brand:
                 r["品牌"] = _to_simplified(extracted_brand)
                 filled_brand += 1
-            # 同时提取口味
-            if extracted_flavor and not r.get("口味"):
+            # 口味提取：仅限烟丝/烟斗丝
+            if extracted_flavor and not r.get("口味") and r.get("产品大类") in ("烟丝", "烟斗丝"):
                 r["口味"] = _to_simplified(extracted_flavor)
                 filled_flavor += 1
 
     print(f"  品牌提取填充: {filled_brand} 条")
     print(f"  口味提取填充: {filled_flavor} 条")
+
+    # 非烟丝/烟斗丝清除口味
+    cleared = 0
+    for r in all_rows:
+        if r.get("口味") and r.get("产品大类") not in ("烟丝", "烟斗丝"):
+            r["口味"] = ""
+            cleared += 1
+    if cleared:
+        print(f"  非烟草品类清除口味: {cleared} 条")
 
     # ── 从产品名称提取重量 ──
     OZ_TO_G = 28.3495
