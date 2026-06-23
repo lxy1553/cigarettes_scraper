@@ -25,6 +25,73 @@ CONSUMABLES_COLS = [
     '库存', '口味/描述'
 ]
 
+# 分类关键词
+SHOUJUAN_KEYWORDS = [
+    '手卷|', 'red field', '红场', '史丹利', 'stanley', '鼓', 'drum',
+    '霍本', 'old holborn', 'gv', '巴西', 'brazil', '黑鹰', 'black hawk',
+    '黑蜘蛛', 'black spider', '丰收', 'harvest', '小骏马', 'colts',
+    '红牛', 'red bull', '切格瓦拉', 'che', '巴厘', 'bali shag',
+    'stamp/special', 'shag', 'zware', 'rolling',
+]
+
+YANDOU_KEYWORDS = [
+    '彼得森', 'peterson', 'sg', '丹.', '马坝', 'macbaren', 'mac baren',
+    '拉特雷', 'rattray', '拉森', 'w.o.larsen', 'cd 康奈尔', 'cornell',
+    '小皇家', 'royal', 'g.l.', 'gl pease', '飞机', 'stanislaw',
+    '好味', 'taste', '皇家', 'ark royal', '罗伯特', '蝴蝶', 'butterfly',
+    '登喜路', 'dunhill', '绞盘', 'capstan', '三修女', '圣布鲁诺',
+    '长老', '威塞克斯', 'wessex', '黑船長', 'captain black',
+    '帆船', 'borkum riff', '斯坦維爾', 'stanwell', '萨利',
+    '加维', 'gawith', '萨缪尔', 'samuel', '康奈尔和迪尔', 'cornell & diehl',
+    '大卫杜夫', 'davidoff', '法官', 'judge', 'orlik', '黑法官',
+    '索兰尼', 'solani', 'hu', 'kopp', '沙芬', 'savinelli',
+    'mo', 'glp', 'bison', '野牛', '水手', 'vanelle',
+    '伊尔斯特德', 'ilsted', '查卡姆', 'charcom', 'kk', 'kohlhase',
+    '温斯洛', 'winslow', '华云', 'vauen', '阿斯顿', 'ashton',
+    '罗伯特麦康奈尔', 'robert mcconnell', '斗丝 |', '斗丝',
+    'flake', 'mixture', 'latakia', 'navy', 'balkan', 'virginia blend',
+    'pipe', '斗草', '烟斗',
+]
+
+
+def classify_product(channel, name, orig_cat):
+    """统一分类逻辑"""
+    name_lower = name.lower() if name else ''
+
+    if channel == '茄营':
+        return '手卷组合' if '组合' in orig_cat else '手卷（手卷丝）'
+
+    if channel == 'ribenyan':
+        cat_map = {'手卷': '手卷（手卷丝）', '烟斗丝': '烟斗（斗草）', '套餐': '手卷组合'}
+        if orig_cat in cat_map:
+            return cat_map[orig_cat]
+        return '其他'  # 外国香烟/日本香烟/雪茄/烟丝等归为其他
+
+    if '套餐' in name or '组合' in name:
+        return '手卷组合'
+
+    # 花店渠道：手卷|XXX → 手卷
+    if channel == '花店':
+        if orig_cat.startswith('手卷|'):
+            return '手卷（手卷丝）'
+        if orig_cat.startswith('烟丝|'):
+            brand_part = orig_cat.replace('烟丝|', '').lower()
+            for kw in YANDOU_KEYWORDS:
+                if kw.lower() in brand_part:
+                    return '烟斗（斗草）'
+            return '手卷（手卷丝）'
+
+    # 华盛渠道：按品牌关键词匹配
+    for kw in YANDOU_KEYWORDS:
+        if kw.lower() in orig_cat.lower() or kw.lower() in name_lower:
+            return '烟斗（斗草）'
+
+    for kw in SHOUJUAN_KEYWORDS:
+        if kw.lower() in orig_cat.lower() or kw.lower() in name_lower:
+            return '手卷（手卷丝）'
+
+    return '其他'
+
 
 def read_csv(path):
     """读取 UTF-8 BOM CSV，返回行列表（OrderedDict）"""
@@ -58,6 +125,7 @@ def aggregate_cigarette():
             key = (row.get('渠道', ''), row.get('产品名称', ''))
             if key not in seen:
                 seen.add(key)
+                row['分类'] = classify_product(row.get('渠道', ''), row.get('产品名称', ''), row.get('分类', ''))
                 all_rows.append(row)
 
     # 2. 读取 PipeUncle（茄营）数据
@@ -67,38 +135,18 @@ def aggregate_cigarette():
             key = (row.get('渠道', ''), row.get('产品名称', ''))
             if key not in seen:
                 seen.add(key)
+                row['分类'] = classify_product(row.get('渠道', ''), row.get('产品名称', ''), row.get('分类', ''))
                 all_rows.append(row)
 
-    # 3. 转换 Ribenyan 数据到标准格式
+    # 3. 读取 Ribenyan 数据（现在与另外两个渠道字段格式一致）
     ribenyan_path = os.path.join(DATA_DIR, 'ribenyan', 'products.csv')
     if os.path.exists(ribenyan_path):
         for row in read_csv(ribenyan_path):
-            name = row.get('name', '')
-            key = ('ribenyan', name)
-            if key in seen:
-                continue
-            seen.add(key)
-
-            price = row.get('price', '')
-            brand = row.get('brand', '').replace('/', ' ')
-            cat_orig = row.get('category', '')
-
-            # 分类映射
-            CAT_MAP = {'手卷': '手卷（手卷丝）', '烟斗丝': '烟斗（斗草）', '套餐': '手卷组合'}
-            cat = CAT_MAP.get(cat_orig, '其他')
-            if cat_orig in ('外国香烟', '日本香烟', '雪茄', '烟丝', '其他'):
-                cat = '其他'
-
-            new_row = OrderedDict()
-            for col in CIGARETTE_COLS:
-                new_row[col] = ''
-            new_row['渠道'] = 'ribenyan'
-            new_row['产品名称'] = name
-            new_row['品牌'] = brand.strip() if brand else ''
-            new_row['单包含税价 (¥)'] = price
-            new_row['库存'] = ''
-            new_row['分类'] = cat
-            all_rows.append(new_row)
+            key = (row.get('渠道', ''), row.get('产品名称', ''))
+            if key not in seen:
+                seen.add(key)
+                row['分类'] = classify_product(row.get('渠道', ''), row.get('产品名称', ''), row.get('分类', ''))
+                all_rows.append(row)
 
     # 4. 写入
     output_path = os.path.join(DATA_DIR, 'aggregated', 'all_cigarette.csv')
