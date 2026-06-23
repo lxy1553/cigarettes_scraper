@@ -93,6 +93,84 @@ def classify_product(channel, name, orig_cat):
     return '其他'
 
 
+def calculate_fields(row):
+    """
+    标准化计算公式，对所有行统一计算衍生字段。
+
+    已知公式（已验证）:
+      单包含税价 (¥) = 不加税价格 (¥) × 1.5          ← 税率 50%
+      美元价格 ($)    = 不加税价格 (¥) ÷ 6.80         ← 汇率
+      价格/500g (¥)  = 单包含税价 ÷ 规格(g) × 500   ← 标准化到500g
+
+    估算公式:
+      平摊运费 (¥/包) = 运费 × (毛重 ÷ 1500)         ← 满1.5kg免运费
+      成本/20支       = (含税价 + 平摊运费) ÷ 规格 × 0.7 × 20
+      成品价/20支     = (含税价 + 平摊运费) ÷ 规格 × 0.7 × 20 × 1.5
+    """
+    row = dict(row)  # work on copy
+
+    # Parse numeric fields
+    raw_price_untax = safe_float(row.get('不加税价格 (¥)', ''))
+    raw_price_taxed = safe_float(row.get('单包含税价 (¥)', ''))
+    raw_usd = safe_float(row.get('美元价格 ($)', ''))
+    raw_shipping = safe_float(row.get('运费 (¥)', ''))
+    raw_gross = safe_float(row.get('毛重 (g)', ''))
+    raw_spec = safe_float(row.get('规格 (g)', ''))
+    raw_avg_ship = safe_float(row.get('平摊运费 (¥/包)', ''))
+
+    # ---- 1. 含税价 / 不加税价 互推 ----
+    if raw_price_taxed <= 0 and raw_price_untax > 0:
+        raw_price_taxed = round(raw_price_untax * 1.5, 2)
+    if raw_price_untax <= 0 and raw_price_taxed > 0:
+        raw_price_untax = round(raw_price_taxed / 1.5, 2)
+
+    # ---- 2. 美元价格 ----
+    if raw_usd <= 0 and raw_price_untax > 0:
+        raw_usd = round(raw_price_untax / 6.80, 2)
+
+    # ---- 3. 价格/500g (¥) ----
+    price_per_500 = safe_float(row.get('价格/500g (¥)', ''))
+    if price_per_500 <= 0 and raw_price_taxed > 0 and raw_spec > 0:
+        price_per_500 = round(raw_price_taxed / raw_spec * 500, 2)
+
+    # ---- 4. 平摊运费 (¥/包) ----
+    shipping_per_pack = raw_avg_ship
+    if shipping_per_pack <= 0 and raw_shipping > 0 and raw_gross > 0:
+        shipping_per_pack = round(raw_shipping * raw_gross / 1500, 2)
+        if shipping_per_pack > raw_shipping:
+            shipping_per_pack = raw_shipping  # cap at full shipping
+    if shipping_per_pack <= 0:
+        shipping_per_pack = raw_shipping  # fallback to raw shipping
+
+    # ---- 5. 平摊运费后烟丝成本/20支 ----
+    cost_20 = safe_float(row.get('平摊运费后烟丝成本/20支', ''))
+    if cost_20 <= 0 and raw_spec > 0 and raw_price_taxed > 0:
+        cost_20 = round((raw_price_taxed + shipping_per_pack) / raw_spec * 0.7 * 20, 2)
+
+    # ---- 6. 20支成品烟价 (¥) ----
+    finish_20 = safe_float(row.get('20支成品烟价 (¥)', ''))
+    if finish_20 <= 0 and cost_20 > 0:
+        finish_20 = round(cost_20 * 1.5, 2)
+
+    # Write back
+    row['不加税价格 (¥)'] = str(raw_price_untax) if raw_price_untax > 0 else ''
+    row['单包含税价 (¥)'] = str(raw_price_taxed) if raw_price_taxed > 0 else ''
+    row['美元价格 ($)'] = str(raw_usd) if raw_usd > 0 else ''
+    row['价格/500g (¥)'] = str(price_per_500) if price_per_500 > 0 else ''
+    row['平摊运费 (¥/包)'] = str(shipping_per_pack) if shipping_per_pack > 0 else ''
+    row['平摊运费后烟丝成本/20支'] = str(cost_20) if cost_20 > 0 else ''
+    row['20支成品烟价 (¥)'] = str(finish_20) if finish_20 > 0 else ''
+
+    return row
+
+
+def safe_float(val):
+    try:
+        return float(str(val).strip().replace(',', ''))
+    except (ValueError, AttributeError):
+        return 0.0
+
+
 def read_csv(path):
     """读取 UTF-8 BOM CSV，返回行列表（OrderedDict）"""
     rows = []
@@ -126,7 +204,7 @@ def aggregate_cigarette():
             if key not in seen:
                 seen.add(key)
                 row['分类'] = classify_product(row.get('渠道', ''), row.get('产品名称', ''), row.get('分类', ''))
-                all_rows.append(row)
+                all_rows.append(calculate_fields(row))
 
     # 2. 读取 PipeUncle（茄营）数据
     pipeuncle_path = os.path.join(DATA_DIR, 'pipeuncle', 'cigarette.csv')
@@ -136,9 +214,9 @@ def aggregate_cigarette():
             if key not in seen:
                 seen.add(key)
                 row['分类'] = classify_product(row.get('渠道', ''), row.get('产品名称', ''), row.get('分类', ''))
-                all_rows.append(row)
+                all_rows.append(calculate_fields(row))
 
-    # 3. 读取 Ribenyan 数据（现在与另外两个渠道字段格式一致）
+    # 3. 读取 Ribenyan 数据
     ribenyan_path = os.path.join(DATA_DIR, 'ribenyan', 'products.csv')
     if os.path.exists(ribenyan_path):
         for row in read_csv(ribenyan_path):
