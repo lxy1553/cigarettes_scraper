@@ -1,0 +1,122 @@
+[
+  {
+    "brand": "A&C Petersen",
+    "name": "Escudo Navy Deluxe",
+    "full_title": "Escudo Navy Deluxe 50g",
+    "sku": "003-001-0001",
+    "price_usd": 20.79,
+    "weight_g": 50,
+    "details": "Family: VirginiaCut: Coins",
+    "ppm": 207.9,
+    "c20": 5.82,
+    "source": "tinned"
+  },
+  {
+    "brand": "Balkan Sasieni",
+    "name": "Balkan Sasieni",
+    "full_title": "Balkan Sasieni 50g",
+    "sku": "003-006-0001",
+    "price_usd": 15.25,
+    "weight_g": 50,
+    "details": "Family: EnglishCut: Ribbon",
+    "ppm": 152.5,
+    "c20": 4.27,
+    "source": "tinned"
+  },
+  {
+    "brand": "Borkum Riff",
+    "name": "Black Cavendish",
+    "full_title": "Black Cavendish 1.5oz",
+    "sku": "003-536-0001",
+    "price_usd": 10.99,
+    "weight_g": 42,
+    "details": "Family: AromaticCut: Ribbon",
+    "ppm": 130.83,
+    "c20": 3.66,
+    "source": "tinned"
+  },
+  {
+    "brand": "Borkum Riff",
+    "name": "Bourbon Whiskey",
+    "full_title": "Bourbon Whiskey 1.5oz",
+    "sku": "003-536-0006",
+    "price_usd": 10.99,
+    "weight_g": 42,
+    "details": "Family: AromaticCut: Ribbon",
+    "ppm": 130.83,
+    "c20": 3.66,
+    "source": "tinned"
+  },
+  {
+    "brand": "Borkum Riff",
+    "name": "Bourbon Whiskey",
+    "full_title": "Bourbon Whiskey 7oz",
+    "sku": "003-536-0007",
+    "price_usd": 42.99,
+    "weight_g": 198,
+    "details": "Family: AromaticCut: Ribbon",
+    "ppm": 108.56,
+    "c20": 3.04,
+    "source": "tinned"
+  },
+  {
+    "brand": "Borkum Riff",
+    "name": "Cherry Cavendish",
+    "full_title": "Cherry Cavendish 1.5oz",
+    "sku": "003-536-0004",
+    "price_usd": 10.99,
+    "weight_g": 42,
+    "details": "Family: AromaticCut: Ribbon",
+    "ppm": 130.83,
+    "c20": 3.66,
+    "source": "tinned"
+  },
+  {
+    "brand": "Borkum Riff",
+    "name": "Cherry Liquor",
+    "full_title": "Cherry Liquor 1.5oz",
+    "sku": "003-536-0005",
+    "price_usd": 10.99,
+    "weight_g": 42,
+    "details": "Family: AromaticCut: Ribbon",
+    "ppm": 130.83,
+    "c20": 3.66,
+    "source": "tinned"
+  },
+  {
+    "brand": "Borkum Riff",
+    "name": "Original",
+    "full_title": "Original 1.5oz",
+    "sku": "003-536-0002",
+    "price_usd": 10.99,
+    "weight_g": 42,
+    "details": "Family: AromaticCut: Ribbon",
+    "ppm": 130.83,
+    "c20": 3.66,
+    "source": "tinned"
+  },
+  {
+    "brand": "Borkum Riff",
+    "name": "Original",
+    "full_title": "Original 7oz",
+    "sku": "003-536-0008",
+    "price_usd": 42.99,
+    "weight_g": 198,
+    "details": "Family: AromaticCut: Ribbon",
+    "ppm": 108.56,
+    "c20": 3.04,
+    "source": "tinned"
+  },
+  {
+    "brand": "Capstan",
+    "name": "Flake Blue",
+    "full_title": "Flake Blue 1.75oz",
+    "sku": "003-581-0002",
+    "price_usd": 24.9,
+    "weight_g": 49,
+    "details": "Family: VirginiaCut: Flake",
+    "ppm": 254.08,
+    "c20": 7.11,
+    "source": "tinned"
+  }
+]
