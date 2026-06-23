@@ -6,11 +6,15 @@ Unifies all channel schemas into a common product_detail table with:
 - Weight normalization (oz/kg → g)
 - Variant expansion (one row per SKU)
 - Product type classification (手卷丝/烟斗丝/成品烟/耗材/...)
+- Brand extraction from product names
+- Flavor extraction from product names
+- Simplified Chinese conversion
 """
 import json
 import csv
 import os
 import re
+from zhconv import convert
 
 # ── 汇率 ──
 USD_CNY = 6.79
@@ -21,6 +25,108 @@ def _cny_to_usd(cny): return round(cny / USD_CNY, 4)
 def _usd_to_cny(usd): return round(usd * USD_CNY, 4)
 def _jpy_to_cny(jpy): return round(jpy * JPY_CNY, 4)
 def _jpy_to_usd(jpy): return round(jpy / USD_JPY, 4)
+
+# ── 品牌词典（从各渠道收集，优先长匹对） ──
+
+BRAND_DICT = sorted(set([
+    # 已有品牌字段
+    "7Seas", "7seas", "A&C Petersen", "AMPHORA", "APACHE",
+    "Acrema Blend", "American Spirit", "Amsterdamer", "Amber Leaf",
+    "AmericanSpirit", "Arango", "Ark Royal", "BORKUM RIFF",
+    "BRIGHT", "Bali Shag", "Bali", "Balkan Sasieni", "Bentley",
+    "Benson Hedges", "Bi Bo", "Bison", "Black Devil", "Black Hawk",
+    "Black Jack", "Black Spider", "BlackDevil", "BlackJack", "Brebbana",
+    "Brigham", "Buzz", "CHACOM", "Camel", "Capstan", "Captain Black",
+    "Captain Earle", "Carter Hall", "Chacom", "Che", "Colts",
+    "Comoy's", "Cornell & Diehl", "Cult", "DAN", "Dan", "Davidoff",
+    "Drum", "Dunhill", "Erinmore", "Escudo", "F&K", "Falcon",
+    "G.L. Pease", "G.L.", "GV", "Gawith Hoggarth", "Gizeh",
+    "Golden Virginia", "HOT", "HU Tobacco", "Half & Half",
+    "Harvest", "Heinrichs", "IM Corona", "KENT", "KK", "Kent",
+    "Kool", "LD", "Lane Limited", "Lucky Strike", "Mac Baren",
+    "Marie", "Marlboro", "Mascotte", "Mevius", "Missouri Meerschaum",
+    "Nording", "OCB", "Old Holborn", "Orlik", "PALL MALL",
+    "PS", "Parliament", "Peter Stokkebye", "Petersen", "Philip Morris",
+    "Prince Albert", "Princeton", "Pure", "R+", "RAW", "RIZLA",
+    "Red Bull", "Red Field", "Rizia", "Rizla", "Robert McConnell",
+    "Rothmans", "Royal", "SG", "ST DUPONT", "Savinelli",
+    "Seminole", "Sobranie", "Solani", "Stanley", "Sutliff",
+    "Swan", "T&T", "TEREA", "Taste", "Three Nuns", "Vanelle",
+    "Vauen", "Wessex", "Winston", "Zig Zag", "Zippo",
+    # huasheng 分类名
+    "彼得森", "黑马", "飞机", "马坝", "丹.", "梅维乌斯",
+    "老人牌", "拉特雷", "丰收", "烟先生", "登喜路", "万宝路",
+    "好味", "小皇家", "CD 康奈尔", "黑蜘蛛", "船长",
+    "小骏马", "拉森", "虎牌", "红牛", "切斯特菲尔德",
+    "菠萝", "罗伯特·麦康奈尔", "云斯顿", "切格瓦拉",
+    "史丹利", "红场", "索拉尼", "巴厘", "蝴蝶",
+    "帆船", "法官", "科尔哈斯科普", "巴西手卷", "极限",
+    "罗洛", "鼓", "黑鹰桶装", "奥斯汀", "绞盘", "萨维内利",
+    "水手", "斯坦威尔", "温斯洛", "霍本", "野牛",
+    "华云", "天鹅", "舞女", "多明戈",
+    "浅鼓", "深鼓", "古巴", "Cuban",
+    "黑法官", "琥珀", "丹", "Brazil Spirit", "巴西精神",
+    "索拉你", "欧亨", "McConell", "麦康奈尔", "罗伯特麦康奈尔", "黑鹰",
+    "皇家酒梅", "皇家椰子菠萝", "皇家拉塔基亚", "皇家冰薄荷",
+    "皇家双香草", "皇家樱桃", "皇家卡布奇诺", "皇家百香果",
+    "皇家维吉尼亚", "皇家马鲁拉", "皇家浆果玫瑰", "皇家天堂茶",
+    "康奈尔和迪尔", "Cornell & Diehl", "金冠", "Korona",
+    "浅鼓", "深鼓", "黄巴厘", "蓝巴厘", "红巴厘",
+    "原味绿GV", "ZEN", "奥斯丁", "黄绞盘方", "蓝绞盘方",
+    "阿斯顿", "Ashton", "查卡姆", "Charcom", "伊尔斯特德", "Ilsted",
+    "红法官", "皇家",
+    # pipeuncle 品牌（补充）
+    "红田", "阿姆斯特丹", "黑船长", "巴厘丝", "马霸手卷",
+    "马霸选择", "马霸", "喇叭手", "美国精神", "奥尔德",
+    "鼓牌", "绿GV", "手卷", "老霍本", "明亮黄",
+    # nov / sp
+    "Cornell & Diehl", "Peter Stokkebye", "Lane Limited",
+    "Gawith Hoggarth", "Arango", "Sutliff", "F&K",
+    "A&C Petersen", "Balkan Sasieni", "Borkum Riff", "Capstan",
+]), key=lambda x: -len(x))
+
+# ── 品牌和口味提取 ──
+
+def _extract_brand_flavor(name: str):
+    """从产品名称提取品牌和口味，返回 (品牌, 口味)"""
+    if not name or not name.strip():
+        return ("", "")
+    name = name.strip()
+
+    # 修复 HTML 实体
+    name = name.replace("&#038;", "&").replace("&amp;", "&")
+
+    matched = ""
+    for brand in BRAND_DICT:
+        m = re.match(re.escape(brand), name, re.IGNORECASE)
+        if m:
+            matched = name[:m.end()]  # 用原文中的大小写
+            remaining = name[m.end():].strip()
+            break
+    else:
+        remaining = name
+
+    # 提取口味：去掉品牌后，去掉括号/规格/英文
+    flavor = remaining
+    flavor = re.sub(r'\s*\([^)]*\)\s*$', '', flavor).strip()
+    flavor = re.sub(r'\s*[\d.]+[gGkK].*$', '', flavor).strip()  # 去掉 "40g" 等
+    flavor = re.sub(r'\s*[a-zA-Z].*$', '', flavor).strip()
+    flavor = re.sub(r'^[\s#\d\-.]+', '', flavor).strip()  # 去掉开头的 #33 等
+    flavor = re.sub(r'\s+', ' ', flavor).strip()
+
+    # 如果口味和品牌一样，则口味置空
+    if flavor == matched:
+        flavor = ""
+
+    return (matched, flavor)
+
+
+def _to_simplified(text: str) -> str:
+    """繁转简"""
+    if not text:
+        return text
+    return convert(text, 'zh-cn')
+
 
 # ── 产品大类分类规则 ──
 
@@ -304,6 +410,30 @@ def main():
         all_rows.extend(rows)
 
     print(f"\nTotal DWD rows: {len(all_rows)}")
+
+    # ── 后处理：品牌提取 + 口味提取 + 繁转简 ──
+    print("\n── 后处理 ──")
+    filled_brand = 0
+    filled_flavor = 0
+    for r in all_rows:
+        # 繁转简（中文字段）
+        for txt_field in ["产品名称", "品牌", "分类", "成分", "切工", "劲道", "口味", "规格"]:
+            if isinstance(r.get(txt_field), str) and r[txt_field]:
+                r[txt_field] = _to_simplified(r[txt_field])
+
+        # 品牌提取：品牌空白的从产品名提取
+        if not r["品牌"]:
+            extracted_brand, extracted_flavor = _extract_brand_flavor(r["产品名称"])
+            if extracted_brand:
+                r["品牌"] = _to_simplified(extracted_brand)
+                filled_brand += 1
+            # 同时提取口味
+            if extracted_flavor and not r.get("口味"):
+                r["口味"] = _to_simplified(extracted_flavor)
+                filled_flavor += 1
+
+    print(f"  品牌提取填充: {filled_brand} 条")
+    print(f"  口味提取填充: {filled_flavor} 条")
 
     os.makedirs("data/dwd", exist_ok=True)
 
