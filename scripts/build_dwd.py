@@ -274,7 +274,7 @@ def _ribenyan(items):
         ftype = str(item.get("ftype", ""))
         ptype = FTYPE_MAP.get(ftype, "其他")
         rows.append({
-            "渠道": "ribenyan",
+            "渠道": "花店",
             "库存编码": "",
             "产品名称": item.get("name", ""),
             "品牌": item.get("brand", ""),
