@@ -147,14 +147,14 @@ def classify_huasheng(item):
         for kw in keywords:
             if kw.lower() in text:
                 return ptype
-    return "手卷丝"
+    return "烟丝"
 
 
 # ribenyan ftype 映射
 FTYPE_MAP = {
     "1": "成品烟", "2": "成品烟",
     "3": "雪茄",
-    "4": "手卷丝",
+    "4": "烟丝",
     "5": "烟斗丝",
     "6": "烟丝",
     "10": "套餐",
@@ -179,7 +179,7 @@ def _pipeuncle(items):
             "库存数量": item.get("total_stock", 0),
             "商品链接": "",
             "原始ID": str(item.get("id", "")),
-            "产品大类": "手卷丝",
+            "产品大类": "烟丝",
         }
         price_rmb = 0
         try:
@@ -452,6 +452,28 @@ def main():
 
     print(f"  品牌提取填充: {filled_brand} 条")
     print(f"  口味提取填充: {filled_flavor} 条")
+
+    # ── 从产品名称提取重量 ──
+    OZ_TO_G = 28.3495
+    weight_patterns = [
+        (r'(\d+\.?\d*)\s*[gG](?=[^a-zA-Z0-9]|$)', 'g'),
+        (r'(\d+\.?\d*)克', 'g'),
+        (r'(\d+\.?\d*)\s*[oO][zZ](?=[^a-zA-Z0-9]|$)', 'oz'),
+    ]
+    filled_weight = 0
+    for r in all_rows:
+        if r.get("重量(克)"):
+            continue
+        name = r.get("产品名称", "")
+        for pat, unit in weight_patterns:
+            m = re.search(pat, name)
+            if m:
+                val = float(m.group(1))
+                w = round(val * OZ_TO_G, 1) if unit == 'oz' else val
+                r["重量(克)"] = w
+                filled_weight += 1
+                break
+    print(f"  从名称提取重量: {filled_weight} 条")
 
     os.makedirs("data/dwd", exist_ok=True)
 
