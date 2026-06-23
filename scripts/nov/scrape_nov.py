@@ -11,7 +11,7 @@ import urllib.parse
 import time
 
 _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-OUTPUT_DIR = os.path.abspath(os.path.join(_SCRIPT_DIR, "../../data/nov"))
+OUTPUT_DIR = os.path.abspath(os.path.join(_SCRIPT_DIR, "../../data"))
 
 SEARCHANISE_API_KEY = "0R5r8h5H7Z"
 SEARCHANISE_URL = "https://searchserverapi1.com/getresults"
@@ -226,6 +226,46 @@ def save_csv(products: list, filepath: str):
     print(f"CSV saved: {filepath}")
 
 
+def _products_to_csv(products: list, filepath: str):
+    """Write JSON array of objects to CSV, expanding arrays as multiple columns."""
+    if not products:
+        print("  No data for CSV")
+        return
+    all_keys = set()
+    for item in products:
+        for k, v in item.items():
+            if isinstance(v, list):
+                for i in range(max(1, len(v)) if v else 1):
+                    all_keys.add(f"{k}_{i}")
+            else:
+                all_keys.add(k)
+    sorted_keys = sorted(all_keys)
+    os.makedirs(os.path.dirname(filepath) or ".", exist_ok=True)
+    with open(filepath, "w", encoding="utf-8-sig", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow(sorted_keys)
+        for item in products:
+            row = []
+            for key in sorted_keys:
+                if "_" in key and key.rsplit("_", 1)[1].isdigit():
+                    base_key = key.rsplit("_", 1)[0]
+                    idx = int(key.rsplit("_", 1)[1])
+                    val = item.get(base_key, [])
+                    if isinstance(val, list) and idx < len(val):
+                        v = val[idx]
+                        row.append(json.dumps(v, ensure_ascii=False) if isinstance(v, (dict, list)) else str(v))
+                    else:
+                        row.append("")
+                else:
+                    v = item.get(key, "")
+                    if isinstance(v, (dict, list)):
+                        row.append(json.dumps(v, ensure_ascii=False))
+                    else:
+                        row.append(str(v) if v is not None else "")
+            writer.writerow(row)
+    print(f"CSV saved: {filepath} ({len(products)} rows, {len(sorted_keys)} cols)")
+
+
 def save_json(products: list, filepath: str):
     """Save products to JSON."""
     os.makedirs(os.path.dirname(filepath), exist_ok=True)
@@ -246,13 +286,13 @@ def main():
         print("No bulk pipe tobacco products found!")
         return
 
-    # Save processed CSV
-    csv_path = os.path.join(OUTPUT_DIR, "products.csv")
-    save_csv(products, csv_path)
+    # Save product JSON (raw Searchanise items array — raw product data)
+    json_path = os.path.join(OUTPUT_DIR, "nov_products.json")
+    save_json(raw, json_path)
 
-    # Save raw API response as JSON (unfiltered)
-    json_path = os.path.join(OUTPUT_DIR, "products.json")
-    save_json(raw_api, json_path)
+    # Generate CSV mirroring the JSON (array expansion)
+    csv_path = os.path.join(OUTPUT_DIR, "nov_products.csv")
+    _products_to_csv(raw, csv_path)
 
     # Summary
     print(f"\n{'=' * 70}")
