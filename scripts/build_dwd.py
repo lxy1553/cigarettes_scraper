@@ -106,16 +106,39 @@ def _extract_brand_flavor(name: str):
     else:
         remaining = name
 
-    # 提取口味：去掉品牌后，去掉括号/规格/英文
+    # 提取口味：去掉品牌后剩余部分
     flavor = remaining
-    flavor = re.sub(r'\s*\([^)]*\)\s*$', '', flavor).strip()
-    flavor = re.sub(r'\s*[\d.]+[gGkK].*$', '', flavor).strip()  # 去掉 "40g" 等
-    flavor = re.sub(r'\s*[a-zA-Z].*$', '', flavor).strip()
-    flavor = re.sub(r'^[\s#\d\-.]+', '', flavor).strip()  # 去掉开头的 #33 等
-    flavor = re.sub(r'\s+', ' ', flavor).strip()
+    # 去括号
+    flavor = re.sub(r'\s*\([^)]*\)\s*', '', flavor).strip()
+    # 去规格数字: "50g" "40克" "1.5oz" "8*24mm" "200pcs" "30g装"
+    flavor = re.sub(r'\s*[\d.]+[\s-]*[gGkKzZ]', '', flavor)
+    flavor = re.sub(r'\s*\d+\s*[pPcC]', '', flavor)
+    flavor = re.sub(r'\s*[\d.]+x[\d.]+mm', '', flavor)
+    flavor = re.sub(r'\s*装|\s*包|\s*盒|\s*条|\s*册|\s*张|\s*克|\s*公斤', '', flavor)
 
-    # 如果口味和品牌一样，则口味置空
-    if flavor == matched:
+    # 组合产品（含 & 或 "组合"）无单一口味
+    if "&" in flavor or "组合" in flavor:
+        return (matched, "")
+
+    # 提取中文部分（优先）
+    cn_parts = re.findall(r'[一-鿿]+', flavor)
+    if cn_parts:
+        flavor = ''.join(cn_parts).strip()
+    else:
+        # 纯英文：取第一个非数字单词（去掉品牌名如 Drum, Bali 等）
+        flavor = re.sub(r'^[\s\d\#]+', '', flavor).strip()
+        # 忽略首词如果是已知品牌名
+        known_en_brands = {"Drum","Bali","Red","Green","Blue","Yellow","Black","White","Gold","Silver",
+                          "Original","Bright","Virginia","American","Cherry","Menthol","Vanilla",
+                          "Strawberry","Apple","Pineapple","Blueberry","Berry","Rose","Cream"}
+        words = flavor.split()
+        flavor_words = [w for w in words if w not in known_en_brands]
+        flavor = flavor_words[0] if flavor_words else ""
+        # 还是空的话取第一个词
+        if not flavor and words:
+            flavor = words[0]
+
+    if not flavor or flavor == matched:
         flavor = ""
 
     return (matched, flavor)
