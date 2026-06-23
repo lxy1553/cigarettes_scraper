@@ -8,16 +8,21 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f5f5; color: #333; padding: 20px; }
   h1 { font-size: 22px; margin-bottom: 5px; }
-  .subtitle { color: #666; font-size: 13px; margin-bottom: 20px; }
-  .filters { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px; }
-  .filters select, .filters input { padding: 6px 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 13px; background: #fff; }
-  .stats { display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; }
-  .stat-card { background: #fff; padding: 10px 16px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,.1); font-size: 13px; min-width: 100px; }
-  .stat-card b { font-size: 18px; color: #e65100; display: block; }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 15px; }
+  .tabs { display: flex; gap: 4px; margin-bottom: 15px; }
+  .tabs button { padding: 8px 18px; border: none; border-radius: 8px 8px 0 0; cursor: pointer; font-size: 13px; font-weight: 600; background: #e0e0e0; color: #555; }
+  .tabs button.active { background: #263238; color: #fff; }
+  .tabs button:hover { background: #37474f; color: #fff; }
+  .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; align-items: center; }
+  .filters select, .filters input { padding: 5px 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 12px; background: #fff; }
+  .stats { display: flex; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+  .stat-card { background: #fff; padding: 8px 14px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,.08); font-size: 12px; }
+  .stat-card b { font-size: 16px; color: #e65100; display: block; }
+  .no-warn { background: #fff3e0; border: 1px solid #ffe0b2; border-radius: 6px; padding: 8px 12px; font-size: 12px; margin-bottom: 10px; color: #e65100; display: none; }
   table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.1); font-size: 12px; }
-  th { background: #263238; color: #fff; padding: 8px 6px; text-align: left; white-space: nowrap; cursor: pointer; position: sticky; top: 0; }
+  th { background: #263238; color: #fff; padding: 7px 5px; text-align: left; white-space: nowrap; cursor: pointer; position: sticky; top: 0; font-size: 11px; }
   th:hover { background: #37474f; }
-  td { padding: 6px; border-bottom: 1px solid #eee; white-space: nowrap; }
+  td { padding: 5px; border-bottom: 1px solid #eee; white-space: nowrap; }
   tr:hover { background: #fafafa; }
   .ch-pipeuncle { color: #1565c0; font-weight: 600; }
   .ch-huasheng { color: #2e7d32; font-weight: 600; }
@@ -25,7 +30,7 @@
   .ch-nov { color: #6a1b9a; font-weight: 600; }
   .ch-sp { color: #00838f; font-weight: 600; }
   .num { text-align: right; font-variant-numeric: tabular-nums; }
-  .tag { display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 11px; }
+  .tag { display: inline-block; padding: 1px 5px; border-radius: 3px; font-size: 10px; }
   .tag-手卷丝 { background: #e3f2fd; color: #1565c0; }
   .tag-烟斗丝 { background: #f3e5f5; color: #6a1b9a; }
   .tag-成品烟 { background: #fff3e0; color: #e65100; }
@@ -33,202 +38,176 @@
   .tag-雪茄 { background: #fce4ec; color: #c62828; }
   .tag-加热烟弹 { background: #fbe9e7; color: #bf360c; }
   .tag-套餐 { background: #e0f2f1; color: #00695c; }
-  .best { color: #2e7d32; font-weight: 700; }
-  .nav { display: flex; gap: 20px; margin-bottom: 20px; border-bottom: 2px solid #ddd; padding-bottom: 10px; }
-  .nav a { color: #666; text-decoration: none; font-size: 14px; padding: 4px 0; cursor: pointer; }
-  .nav a.active { color: #e65100; font-weight: 600; border-bottom: 2px solid #e65100; margin-bottom: -12px; }
-  #featured { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-bottom: 20px; }
-  .feature-card { background: #fff; border-radius: 8px; padding: 14px; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
-  .feature-card h3 { font-size: 14px; margin-bottom: 8px; }
-  .feature-card .row { display: flex; justify-content: space-between; font-size: 12px; padding: 3px 0; border-bottom: 1px solid #f0f0f0; }
-  .feature-card .row:last-child { border: none; }
-  .feature-card .label { color: #888; }
-  .feature-card .val { font-weight: 600; }
+  .no-weight { color: #bbb; font-style: italic; }
   .empty { text-align: center; padding: 40px; color: #999; }
   @media (max-width: 768px) {
     body { padding: 10px; }
     table { font-size: 11px; }
-    td, th { padding: 4px 3px; }
+    td, th { padding: 3px; }
   }
 </style>
 </head>
 <body>
 
-<h1>🚬 手卷烟丝 &amp; 烟斗丝 价格对比</h1>
-<div class="subtitle">含税价 = 商品价 × 1.5 &nbsp;·&nbsp; 克单价 = 含税价 ÷ 重量 &nbsp;·&nbsp; 20支成本 = 12g×克单价 + ¥3.50耗材</div>
+<h1>🚬 价格对比</h1>
+<div class="subtitle">含税价 = 商品价 × 1.5 · 克单价 = 含税价 ÷ 重量 · 20支成本 = 12g×克单价 + ¥3.50</div>
 
-<div class="nav">
-  <a class="active" onclick="showTab('all')">📋 全部产品</a>
-  <a onclick="showTab('cheap')">🏆 最划算</a>
+<div class="tabs" id="tabs">
+  <button class="active" onclick="switchTab('tobacco')">🚬 手卷丝 + 烟斗丝</button>
+  <button onclick="switchTab('consumable')">🧻 耗材</button>
+  <button onclick="switchTab('other')">📦 成品烟 + 其他</button>
 </div>
 
 <div class="stats" id="stats"></div>
+<div class="no-warn" id="noWarn">⚠️ 部分产品缺少重量数据，无法计算克单价和20支成本</div>
 
 <div class="filters">
-  <select id="filterType" onchange="render()">
-    <option value="">全部大类</option>
-    <option value="手卷丝">手卷丝</option>
-    <option value="烟斗丝">烟斗丝</option>
-    <option value="成品烟">成品烟</option>
-    <option value="耗材">耗材</option>
-    <option value="雪茄">雪茄</option>
-    <option value="加热烟弹">加热烟弹</option>
-  </select>
-  <select id="filterChannel" onchange="render()">
-    <option value="">全部渠道</option>
-    <option value="pipeuncle">茄营</option>
-    <option value="huasheng">华盛</option>
-    <option value="花店">花店</option>
-    <option value="nov">nov</option>
-    <option value="sp">sp</option>
-  </select>
-  <input id="filterBrand" placeholder="搜品牌..." oninput="render()" style="width:120px">
-  <input id="filterSearch" placeholder="搜产品..." oninput="render()" style="width:160px">
-  <span style="font-size:12px;color:#888;line-height:32px" id="count"></span>
+  <select id="filterChannel" onchange="render()"><option value="">全部渠道</option></select>
+  <select id="filterBrand" onchange="render()"><option value="">全部品牌</option></select>
+  <select id="filterType" onchange="render()"><option value="">全部大类</option></select>
+  <input id="filterName" list="nameList" placeholder="搜产品名..." oninput="render()" style="width:140px">
+  <datalist id="nameList"></datalist>
+  <input id="filterSearch" placeholder="全文搜索..." oninput="render()" style="width:120px">
+  <span style="font-size:12px;color:#888;line-height:28px" id="count"></span>
 </div>
-
-<div id="featured"></div>
 
 <div style="overflow-x:auto">
 <table><thead id="thead"></thead><tbody id="tbody"></tbody></table>
 </div>
 
 <script>
-let products = [];
-let sortCol = 9, sortAsc = true;  // default sort by cost20 ascending
+let products = [], filteredCache = [];
+let sortCol = -1, sortAsc = true;
+let currentTab = 'tobacco';
 
-fetch('data/ads/products.json')
-  .then(r => r.json())
-  .then(data => {
-    products = data.map(p => {
-      const price = parseFloat(p['人民币价格']) || 0;
-      const weight = parseFloat(p['重量(克)']) || 0;
-      const tax = price * 1.5;
-      const perG = weight > 0 ? tax / weight : 0;
-      const per500 = perG > 0 ? perG * 500 : 0;
-      const cost20 = perG > 0 ? 12 * perG + 3.50 : 0;
-      return {
-        channel: p['渠道'], name: p['产品名称'], brand: p['品牌'],
-        type: p['产品大类'], weight, price, tax: +tax.toFixed(2),
-        perG: +perG.toFixed(2), per500: +per500.toFixed(2), cost20: +cost20.toFixed(2)
-      };
-    });
-    showTab('all');
+const TAB_TYPES = {
+  tobacco: ['手卷丝', '烟斗丝'],
+  consumable: ['耗材'],
+  other: ['成品烟', '雪茄', '加热烟弹', '套餐', '烟丝', '其他'],
+};
+
+const CH_NAMES = {pipeuncle:'茄营',huasheng:'华盛','花店':'花店',nov:'nov',sp:'sp'};
+
+fetch('data/ads/products.json').then(r=>r.json()).then(data => {
+  products = data.map(p => {
+    const price = parseFloat(p['人民币价格']) || 0;
+    const usd = parseFloat(p['美元价格']) || 0;
+    const weight = parseFloat(p['重量(克)']) || 0;
+    const tax = price * 1.5;
+    const perG = weight > 0 ? tax / weight : 0;
+    return {
+      channel: p['渠道'], name: p['产品名称'], brand: p['品牌'],
+      type: p['产品大类'], weight, price, usd, tax: +tax.toFixed(2),
+      perG: +perG.toFixed(2), per500: +(perG*500).toFixed(2), cost20: perG>0 ? +(12*perG+3.5).toFixed(2) : 0,
+      link: p['商品链接'] || '',
+    };
   });
+  initFilters();
+  switchTab('tobacco');
+});
 
-function showTab(tab) {
-  document.querySelectorAll('.nav a').forEach(a => a.classList.remove('active'));
-  event.target.classList.add('active');
+function initFilters() {
+  const channels = [...new Set(products.map(p=>p.channel))].sort();
+  document.getElementById('filterChannel').innerHTML = '<option value="">全部渠道</option>'
+    + channels.map(c => '<option value="'+c+'">'+(CH_NAMES[c]||c)+'</option>').join('');
+
+  const brands = [...new Set(products.map(p=>p.brand))].filter(Boolean).sort();
+  document.getElementById('filterBrand').innerHTML = '<option value="">全部品牌</option>'
+    + brands.map(b => '<option value="'+b+'">'+b+'</option>').join('');
+
+  const types = [...new Set(products.map(p=>p.type))].filter(Boolean).sort();
+  document.getElementById('filterType').innerHTML = '<option value="">全部大类</option>'
+    + types.map(t => '<option value="'+t+'">'+t+'</option>').join('');
+
+  document.getElementById('nameList').innerHTML = products.map(p =>
+    '<option value="'+p.name.replace(/"/g,'&quot;')+'">').join('');
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('#tabs button').forEach((b,i) =>
+    b.className = ['tobacco','consumable','other'][i]===tab?'active':'');
+  sortCol = 9; sortAsc = true;
   render();
-  if (tab === 'cheap') renderCheap();
-  else renderFeatured();
+  document.getElementById('noWarn').style.display =
+    (tab==='tobacco' && filtered().filter(p=>p.weight===0).length > 0) ? 'block' : 'none';
 }
 
 function filtered() {
-  const type = document.getElementById('filterType').value;
+  const tabTypes = TAB_TYPES[currentTab] || [];
   const ch = document.getElementById('filterChannel').value;
-  const brand = document.getElementById('filterBrand').value.toLowerCase();
+  const brand = document.getElementById('filterBrand').value;
+  const type = document.getElementById('filterType').value;
+  const name = document.getElementById('filterName').value.toLowerCase();
   const search = document.getElementById('filterSearch').value.toLowerCase();
   return products.filter(p => {
-    if (type && p.type !== type) return false;
+    if (!tabTypes.includes(p.type)) return false;
     if (ch && p.channel !== ch) return false;
-    if (brand && !p.brand.toLowerCase().includes(brand)) return false;
-    if (search && !p.name.toLowerCase().includes(search)) return false;
+    if (brand && p.brand !== brand) return false;
+    if (type && p.type !== type) return false;
+    if (name && !p.name.toLowerCase().includes(name)) return false;
+    if (search && !p.name.toLowerCase().includes(search)
+      && !p.brand.toLowerCase().includes(search)) return false;
     return true;
   });
 }
 
+function truncate(name, max=30) {
+  return name.length > max ? name.slice(0, max-1)+'…' : name;
+}
+
 function render() {
   const data = filtered();
+  filteredCache = data;
   document.getElementById('count').textContent = `共 ${data.length} 条`;
 
-  const chs = new Set(data.map(p => p.channel));
-  const brands = new Set(data.map(p => p.brand));
-  const hasP = data.filter(p => p.price > 0);
-  const minP = hasP.length ? Math.min(...hasP.map(p => p.price)).toFixed(2) : '-';
-  const maxP = hasP.length ? Math.max(...hasP.map(p => p.price)).toFixed(2) : '-';
+  const chs = new Set(data.map(p=>p.channel));
+  const brands = new Set(data.map(p=>p.brand));
+  const hasP = data.filter(p=>p.price>0);
+  const noW = data.filter(p=>p.weight===0);
+  const minP = hasP.length ? Math.min(...hasP.map(p=>p.price)).toFixed(2) : '-';
+  const maxP = hasP.length ? Math.max(...hasP.map(p=>p.price)).toFixed(2) : '-';
   document.getElementById('stats').innerHTML = `
     <div class="stat-card">渠道 <b>${chs.size}</b></div>
     <div class="stat-card">品牌 <b>${brands.size}</b></div>
     <div class="stat-card">产品 <b>${data.length}</b></div>
+    <div class="stat-card">无重量 <b>${noW.length}</b></div>
     <div class="stat-card">价格 ¥<b>${minP}</b> ~ <b>${maxP}</b></div>`;
 
-  const headers = ['渠道', '产品名称', '品牌', '产品大类', '重量(g)', '商品价¥', '含税价¥', '克单价¥/g', '500g¥', '20支成本¥', '链接'];
-  const keys = ['channel', 'name', 'brand', 'type', 'weight', 'price', 'tax', 'perG', 'per500', 'cost20', 'link'];
-  document.getElementById('thead').innerHTML = '<tr>' + headers.map((h,i) =>
-    `<th onclick="sortTable(${i})">${h} ${sortCol===i?(sortAsc?' ▲':' ▼'):''}</th>`).join('') + '</tr>';
+  const headers = ['渠道','产品名称','品牌','大类','重量(g)','商品价¥','商品价$','含税价¥','克单价¥/g','500g¥','20支成本¥','链接'];
+  const keys = ['channel','name','brand','type','weight','price','usd','tax','perG','per500','cost20','link'];
+  document.getElementById('thead').innerHTML = '<tr>'+headers.map((h,i)=>
+    `<th onclick="sortTable(${i})">${h}${sortCol===i?(sortAsc?' ▲':' ▼'):''}</th>`).join('')+'</tr>';
 
-  document.getElementById('tbody').innerHTML = data.length ? data.map(p => {
-    const chCls = 'ch-' + p.channel;
-    const chName = {pipeuncle:'茄营',huasheng:'华盛','花店':'花店',nov:'nov',sp:'sp'}[p.channel] || p.channel;
+  document.getElementById('tbody').innerHTML = data.length ? data.map(p=>{
+    const chName = CH_NAMES[p.channel]||p.channel;
+    const wDisplay = p.weight ? p.weight+'g' : '<span class="no-weight">无</span>';
+    const gDisplay = p.perG ? '¥'+p.perG.toFixed(2) : '<span class="no-weight">—</span>';
+    const cDisplay = p.cost20 ? '¥'+p.cost20.toFixed(2) : '<span class="no-weight">—</span>';
     return `<tr>
-      <td class="${chCls}">${chName}</td>
-      <td>${p.name}</td>
+      <td class="ch-${p.channel}">${chName}</td>
+      <td title="${p.name.replace(/"/g,'&quot;')}">${truncate(p.name)}</td>
       <td>${p.brand}</td>
       <td><span class="tag tag-${p.type}">${p.type}</span></td>
-      <td class="num">${p.weight || '-'}</td>
+      <td class="num">${wDisplay}</td>
       <td class="num">¥${p.price.toFixed(2)}</td>
+      <td class="num">$${p.usd.toFixed(2)}</td>
       <td class="num">¥${p.tax.toFixed(2)}</td>
-      <td class="num">${p.perG ? '¥'+p.perG.toFixed(2) : '-'}</td>
-      <td class="num">${p.per500 ? '¥'+p.per500.toFixed(2) : '-'}</td>
-      <td class="num"><b>${p.cost20 ? '¥'+p.cost20.toFixed(2) : '-'}</b></td>
-      <td>${p.link ? '<a href="'+p.link+'" target="_blank">🔗</a>' : ''}</td>
+      <td class="num">${gDisplay}</td>
+      <td class="num">${p.per500?'¥'+p.per500.toFixed(2):'<span class="no-weight">—</span>'}</td>
+      <td class="num"><b>${cDisplay}</b></td>
+      <td>${p.link?'<a href="'+p.link+'" target="_blank">🔗</a>':''}</td>
     </tr>`;
-  }).join('') : '<tr><td colspan="11" class="empty">无匹配产品</td></tr>';
-}
-
-function renderFeatured() {
-  const targets = ['绿GV', '老霍本 黄', '鼓牌原味', '深鼓', '巴厘丝'];
-  const items = targets.map(t => products.find(p => p.name.includes(t) && p.weight > 0)).filter(Boolean);
-  document.getElementById('featured').innerHTML = items.length ? items.map(p => {
-    const chName = {pipeuncle:'茄营',huasheng:'华盛','花店':'花店',nov:'nov',sp:'sp'}[p.channel] || p.channel;
-    return `<div class="feature-card">
-      <h3>${p.name}</h3>
-      <div class="row"><span class="label">渠道 / 品牌</span><span class="val">${chName} · ${p.brand}</span></div>
-      <div class="row"><span class="label">重量</span><span class="val">${p.weight}g</span></div>
-      <div class="row"><span class="label">含税价</span><span class="val">¥${p.tax.toFixed(2)}</span></div>
-      <div class="row"><span class="label">克单价</span><span class="val">¥${p.perG.toFixed(2)}/g</span></div>
-      <div class="row"><span class="label">500g单价</span><span class="val">¥${p.per500.toFixed(2)}</span></div>
-      <div class="row" style="font-weight:700;color:#e65100"><span class="label">20支成本</span><span class="val">¥${p.cost20.toFixed(2)}</span></div>
-    </div>`;
-  }).join('') : '';
-}
-
-function renderCheap() {
-  const withData = products.filter(p => p.weight > 0 && p.price > 0);
-  const byCh = {};
-  withData.forEach(p => {
-    if (!byCh[p.channel]) byCh[p.channel] = [];
-    byCh[p.channel].push(p);
-  });
-  const chName = {pipeuncle:'茄营',huasheng:'华盛','花店':'花店',nov:'nov',sp:'sp'};
-  let html = '<h3 style="margin-bottom:10px;font-size:16px">🏆 各渠道 20支成本最低 TOP 10</h3>';
-  for (const [ch, items] of Object.entries(byCh)) {
-    items.sort((a,b) => a.cost20 - b.cost20);
-    const top = items.slice(0, 10);
-    html += `<h4 style="font-size:14px;margin:12px 0 5px;color:#e65100">${chName[ch]||ch}</h4>`;
-    html += `<table style="font-size:11px;margin-bottom:12px">
-      <tr><th>产品</th><th>品牌</th><th>重量</th><th>含税价¥</th><th>克单价</th><th>20支成本¥</th></tr>`;
-    top.forEach(p => {
-      html += `<tr><td>${p.name}</td><td>${p.brand}</td><td class="num">${p.weight}g</td>
-        <td class="num">¥${p.tax.toFixed(2)}</td><td class="num">¥${p.perG.toFixed(2)}</td>
-        <td class="num"><b class="best">¥${p.cost20.toFixed(2)}</b></td></tr>`;
-    });
-    html += '</table>';
-  }
-  document.getElementById('featured').innerHTML = html;
-  document.getElementById('featured').style.display = 'block';
+  }).join('') : '<tr><td colspan="12" class="empty">无匹配产品</td></tr>';
 }
 
 function sortTable(col) {
-  if (sortCol === col) sortAsc = !sortAsc;
-  else { sortCol = col; sortAsc = true; }
-  const keys = ['channel', 'name', 'brand', 'type', 'weight', 'price', 'tax', 'perG', 'per500', 'cost20', 'link'];
+  if (sortCol===col) sortAsc=!sortAsc; else { sortCol=col; sortAsc=true; }
+  const keys = ['channel','name','brand','type','weight','price','usd','tax','perG','per500','cost20','link'];
   const key = keys[col];
-  products.sort((a,b) => {
-    const va = a[key] ?? '', vb = b[key] ?? '';
-    if (typeof va === 'string') return sortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
-    return sortAsc ? va - vb : vb - va;
+  products.sort((a,b)=>{
+    const va = a[key]??'', vb = b[key]??'';
+    return typeof va==='string' ? (sortAsc?va.localeCompare(vb):vb.localeCompare(va)) : sortAsc?va-vb:vb-va;
   });
   render();
 }
