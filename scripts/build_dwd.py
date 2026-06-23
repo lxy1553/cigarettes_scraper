@@ -85,6 +85,13 @@ BRAND_DICT = sorted(set([
     "A&C Petersen", "Balkan Sasieni", "Borkum Riff", "Capstan",
 ]), key=lambda x: -len(x))
 
+# ── 品牌名称统一映射 ──
+BRAND_NORMALIZE = {
+    "绿GV": "gv",
+    "原味绿GV": "gv",
+    "明亮黄": "gv",
+}
+
 # ── 品牌和口味提取 ──
 
 def _extract_brand_flavor(name: str):
@@ -475,6 +482,16 @@ def main():
                 filled_flavor += 1
 
     print(f"  品牌提取填充: {filled_brand} 条")
+
+    # ── 品牌名称统一 ──
+    normalized = 0
+    for r in all_rows:
+        b = r.get("品牌")
+        if b and b in BRAND_NORMALIZE:
+            r["品牌"] = BRAND_NORMALIZE[b]
+            normalized += 1
+    if normalized:
+        print(f"  品牌名称统一: {normalized} 条")
     print(f"  口味提取填充: {filled_flavor} 条")
 
     # 非烟丝/烟斗丝清除口味
