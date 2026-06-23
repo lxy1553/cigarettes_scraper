@@ -97,7 +97,7 @@ fetch('data/ads/products.json').then(r=>r.json()).then(data => {
     const perG = weight > 0 ? tax / weight : 0;
     return {
       channel: p['渠道'], name: p['产品名称'], brand: p['品牌'],
-      type: p['产品大类'], weight, price, usd, tax: +tax.toFixed(2),
+      flavor: p['口味'] || '', type: p['产品大类'], weight, price, usd, tax: +tax.toFixed(2),
       perG: +perG.toFixed(2), per500: +(perG*500).toFixed(2), cost20: perG>0 ? +(12*perG+3.5).toFixed(2) : 0,
       link: p['商品链接'] || '',
     };
@@ -174,8 +174,8 @@ function render() {
     <div class="stat-card">无重量 <b>${noW.length}</b></div>
     <div class="stat-card">价格 ¥<b>${minP}</b> ~ <b>${maxP}</b></div>`;
 
-  const headers = ['渠道','产品名称','品牌','大类','重量(g)','商品价¥','商品价$','含税价¥','克单价¥/g','500g¥','20支成本¥','链接'];
-  const keys = ['channel','name','brand','type','weight','price','usd','tax','perG','per500','cost20','link'];
+  const headers = ['渠道','产品名称','品牌','口味','大类','重量(g)','商品价¥','商品价$','含税价¥','克单价¥/g','500g¥','20支成本¥','链接'];
+  const keys = ['channel','name','brand','flavor','type','weight','price','usd','tax','perG','per500','cost20','link'];
   document.getElementById('thead').innerHTML = '<tr>'+headers.map((h,i)=>
     `<th onclick="sortTable(${i})">${h}${sortCol===i?(sortAsc?' ▲':' ▼'):''}</th>`).join('')+'</tr>';
 
@@ -188,6 +188,7 @@ function render() {
       <td class="ch-${p.channel}">${chName}</td>
       <td title="${p.name.replace(/"/g,'&quot;')}">${truncate(p.name)}</td>
       <td>${p.brand}</td>
+      <td style="color:#888;font-size:11px">${p.flavor || '-'}</td>
       <td><span class="tag tag-${p.type}">${p.type}</span></td>
       <td class="num">${wDisplay}</td>
       <td class="num">¥${p.price.toFixed(2)}</td>
@@ -198,7 +199,7 @@ function render() {
       <td class="num"><b>${cDisplay}</b></td>
       <td>${p.link?'<a href="'+p.link+'" target="_blank">🔗</a>':''}</td>
     </tr>`;
-  }).join('') : '<tr><td colspan="12" class="empty">无匹配产品</td></tr>';
+  }).join('') : '<tr><td colspan="13" class="empty">无匹配产品</td></tr>';
 }
 
 function sortTable(col) {
