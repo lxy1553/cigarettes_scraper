@@ -192,11 +192,23 @@ def _pipeuncle(items):
         base["美元价格"] = _cny_to_usd(price_rmb) if price_rmb else 0
 
         weight_g = 0
-        w = item.get("weight_kg", "")
-        if w:
-            m = re.search(r"([\d.]+)\s*kg", w, re.IGNORECASE)
+        # 优先从 spec 取净重 (如 "0.05kg/pack*1" → 50g)
+        spec_str = item.get("spec", "")
+        if spec_str:
+            m = re.search(r"([\d.]+)\s*kg", spec_str, re.IGNORECASE)
             if m:
                 weight_g = round(float(m.group(1)) * 1000, 1)
+            else:
+                m = re.search(r"([\d.]+)\s*g", spec_str, re.IGNORECASE)
+                if m:
+                    weight_g = round(float(m.group(1)), 1)
+        # fallback: 取 weight_kg（注意这个值是毛重含包装）
+        if weight_g == 0:
+            w = item.get("weight_kg", "")
+            if w:
+                m = re.search(r"([\d.]+)\s*kg", w, re.IGNORECASE)
+                if m:
+                    weight_g = round(float(m.group(1)) * 1000, 1)
         base["重量(克)"] = weight_g
         base["规格"] = item.get("spec", "")
 
@@ -219,11 +231,23 @@ def _pipeuncle(items):
                     row["人民币价格"] = _usd_to_cny(v_price)
                 except (ValueError, TypeError):
                     pass
-                vw = variant.get("weight_kg", "")
-                if vw:
-                    vm = re.search(r"([\d.]+)\s*kg", str(vw), re.IGNORECASE)
+                # variant 重量：优先从 spec 取
+                v_spec = variant.get("spec", "")
+                if v_spec:
+                    vm = re.search(r"([\d.]+)\s*kg", v_spec, re.IGNORECASE)
                     if vm:
                         row["重量(克)"] = round(float(vm.group(1)) * 1000, 1)
+                    else:
+                        vm = re.search(r"([\d.]+)\s*g", v_spec, re.IGNORECASE)
+                        if vm:
+                            row["重量(克)"] = round(float(vm.group(1)), 1)
+                # fallback: weight_kg
+                if row["重量(克)"] == 0:
+                    vw = variant.get("weight_kg", "")
+                    if vw:
+                        vm = re.search(r"([\d.]+)\s*kg", str(vw), re.IGNORECASE)
+                        if vm:
+                            row["重量(克)"] = round(float(vm.group(1)) * 1000, 1)
                 row["库存编码"] = variant.get("code", base.get("库存编码", ""))
                 rows.append(row)
         else:
