@@ -1,9 +1,11 @@
 """
 Build DWD (Data Warehouse Detail) layer from ODS raw data.
 Unifies all channel schemas into a common product_detail table with:
+- Chinese field names
 - Unified currency conversion (USD + CNY)
 - Weight normalization (oz/kg → g)
 - Variant expansion (one row per SKU)
+- Product type classification (手卷丝/烟斗丝/成品烟/耗材/...)
 """
 import json
 import csv
@@ -20,35 +22,68 @@ def _usd_to_cny(usd): return round(usd * USD_CNY, 4)
 def _jpy_to_cny(jpy): return round(jpy * JPY_CNY, 4)
 def _jpy_to_usd(jpy): return round(jpy / USD_JPY, 4)
 
+# ── 产品大类分类规则 ──
+
+# huasheng 名称关键词 → 产品大类
+HS_TYPE_KEYWORDS = [
+    ("耗材", ["滤嘴", "空管", "卷纸", "卷烟器", "滤芯", "切角", "慢燃", "过滤嘴", "盒 ", "册 ", "册\n"]),
+    ("成品烟", ["条盒", "1条", "1条10盒", "香烟"]),
+    ("加热烟弹", ["terea", "加热"]),
+    ("烟斗丝", ["斗丝", "彼得森", "拉森 ", "拉特雷", "萨维内利", "阿斯顿", "菠萝", "华云",
+                 "斯坦威尔", "温斯洛", "科尔哈斯", "索拉尼", "罗伯特麦康奈尔"]),
+    ("套餐", ["套餐", "set ", "精选"]),
+]
+
+def classify_huasheng(item):
+    """Classify huasheng product by name/brand keywords."""
+    text = (item.get("name", "") + " " + item.get("categories", "")).lower()
+    for ptype, keywords in HS_TYPE_KEYWORDS:
+        for kw in keywords:
+            if kw.lower() in text:
+                return ptype
+    return "手卷丝"
+
+
+# ribenyan ftype 映射
+FTYPE_MAP = {
+    "1": "成品烟", "2": "成品烟",
+    "3": "雪茄",
+    "4": "手卷丝",
+    "5": "烟斗丝",
+    "6": "烟丝",
+    "10": "套餐",
+}
+
+
 # ── 各渠道转换函数 ──
 
 def _pipeuncle(items):
     rows = []
     for item in items:
         base = {
-            "channel": "pipeuncle",
-            "product_name": item.get("name", ""),
-            "brand": item.get("brand", ""),
-            "category": item.get("category", ""),
-            "ingredients": item.get("ingredients", ""),
-            "cut": item.get("cut", ""),
-            "strength": item.get("strength", ""),
-            "flavor": item.get("flavor", ""),
-            "in_stock": item.get("in_stock", False),
-            "stock_qty": item.get("total_stock", 0),
-            "url": "",
-            "original_id": str(item.get("id", "")),
-            "code": item.get("code", ""),
+            "渠道": "pipeuncle",
+            "产品名称": item.get("name", ""),
+            "品牌": item.get("brand", ""),
+            "分类": item.get("category", ""),
+            "成分": item.get("ingredients", ""),
+            "切工": item.get("cut", ""),
+            "劲道": item.get("strength", ""),
+            "口味": item.get("flavor", ""),
+            "是否有货": item.get("in_stock", False),
+            "库存数量": item.get("total_stock", 0),
+            "商品链接": "",
+            "原始ID": str(item.get("id", "")),
+            "产品大类": "手卷丝",
         }
         price_rmb = 0
         try:
             price_rmb = float(item.get("price_rmb", 0))
         except (ValueError, TypeError):
             pass
-        base["price_original"] = price_rmb
-        base["currency"] = "CNY"
-        base["price_cny"] = price_rmb
-        base["price_usd"] = _cny_to_usd(price_rmb) if price_rmb else 0
+        base["原始价格"] = price_rmb
+        base["原始币种"] = "CNY"
+        base["人民币价格"] = price_rmb
+        base["美元价格"] = _cny_to_usd(price_rmb) if price_rmb else 0
 
         weight_g = 0
         w = item.get("weight_kg", "")
@@ -56,8 +91,8 @@ def _pipeuncle(items):
             m = re.search(r"([\d.]+)\s*kg", w, re.IGNORECASE)
             if m:
                 weight_g = round(float(m.group(1)) * 1000, 1)
-        base["weight_g"] = weight_g
-        base["spec"] = item.get("spec", "")
+        base["重量(克)"] = weight_g
+        base["规格"] = item.get("spec", "")
 
         sku_details = item.get("sku_details", [])
         if isinstance(sku_details, str):
@@ -69,24 +104,24 @@ def _pipeuncle(items):
         if sku_details and isinstance(sku_details, list):
             for variant in sku_details:
                 row = dict(base)
-                row["spec"] = variant.get("spec", base["spec"])
+                row["规格"] = variant.get("spec", base["规格"])
                 try:
                     v_price = float(variant.get("price_usd", 0))
-                    row["price_original"] = v_price
-                    row["currency"] = "USD"
-                    row["price_usd"] = v_price
-                    row["price_cny"] = _usd_to_cny(v_price)
+                    row["原始价格"] = v_price
+                    row["原始币种"] = "USD"
+                    row["美元价格"] = v_price
+                    row["人民币价格"] = _usd_to_cny(v_price)
                 except (ValueError, TypeError):
                     pass
                 vw = variant.get("weight_kg", "")
                 if vw:
                     vm = re.search(r"([\d.]+)\s*kg", str(vw), re.IGNORECASE)
                     if vm:
-                        row["weight_g"] = round(float(vm.group(1)) * 1000, 1)
-                row["sku"] = variant.get("code", base["code"])
+                        row["重量(克)"] = round(float(vm.group(1)) * 1000, 1)
+                row["库存编码"] = variant.get("code", base.get("库存编码", ""))
                 rows.append(row)
         else:
-            base["sku"] = item.get("code", "")
+            base["库存编码"] = item.get("code", "")
             rows.append(base)
     return rows
 
@@ -100,22 +135,24 @@ def _huasheng(items):
         except (ValueError, TypeError):
             pass
         price_cny = price_fen / 100
+        ptype = classify_huasheng(item)
         rows.append({
-            "channel": "huasheng",
-            "sku": item.get("sku", ""),
-            "product_name": item.get("name", ""),
-            "brand": "",
-            "category": item.get("categories", ""),
-            "price_original": price_fen,
-            "currency": "CNY",
-            "price_usd": _cny_to_usd(price_cny),
-            "price_cny": price_cny,
-            "weight_g": 0,
-            "spec": "",
-            "in_stock": item.get("is_in_stock", False),
-            "stock_qty": 0,
-            "url": item.get("permalink", ""),
-            "original_id": str(item.get("id", "")),
+            "渠道": "huasheng",
+            "库存编码": item.get("sku", ""),
+            "产品名称": item.get("name", ""),
+            "品牌": "",
+            "分类": item.get("categories", ""),
+            "原始价格": price_fen,
+            "原始币种": "CNY",
+            "美元价格": _cny_to_usd(price_cny),
+            "人民币价格": price_cny,
+            "重量(克)": 0,
+            "规格": "",
+            "是否有货": item.get("is_in_stock", False),
+            "库存数量": 0,
+            "商品链接": item.get("permalink", ""),
+            "原始ID": str(item.get("id", "")),
+            "产品大类": ptype,
         })
     return rows
 
@@ -128,22 +165,25 @@ def _ribenyan(items):
             price_jpy = float(item.get("price", 0))
         except (ValueError, TypeError):
             pass
+        ftype = str(item.get("ftype", ""))
+        ptype = FTYPE_MAP.get(ftype, "其他")
         rows.append({
-            "channel": "ribenyan",
-            "sku": "",
-            "product_name": item.get("name", ""),
-            "brand": item.get("brand", ""),
-            "category": item.get("category", ""),
-            "price_original": price_jpy,
-            "currency": "JPY",
-            "price_usd": _jpy_to_usd(price_jpy),
-            "price_cny": _jpy_to_cny(price_jpy),
-            "weight_g": 0,
-            "spec": item.get("size", ""),
-            "in_stock": True,
-            "stock_qty": 0,
-            "url": item.get("url", ""),
-            "original_id": str(item.get("id", "")),
+            "渠道": "ribenyan",
+            "库存编码": "",
+            "产品名称": item.get("name", ""),
+            "品牌": item.get("brand", ""),
+            "分类": item.get("category", ""),
+            "原始价格": price_jpy,
+            "原始币种": "JPY",
+            "美元价格": _jpy_to_usd(price_jpy),
+            "人民币价格": _jpy_to_cny(price_jpy),
+            "重量(克)": 0,
+            "规格": item.get("size", ""),
+            "是否有货": True,
+            "库存数量": 0,
+            "商品链接": item.get("url", ""),
+            "原始ID": str(item.get("id", "")),
+            "产品大类": ptype,
         })
     return rows
 
@@ -152,28 +192,29 @@ def _nov(items):
     rows = []
     for item in items:
         base = {
-            "channel": "nov",
-            "product_name": item.get("title", ""),
-            "brand": item.get("brand", ""),
-            "category": item.get("categories", "").replace("[:ATTR:]", " > "),
-            "in_stock": True,
-            "stock_qty": int(item.get("inventory_level", 0) or 0),
-            "url": item.get("link", ""),
-            "original_id": str(item.get("product_id", "")),
+            "渠道": "nov",
+            "产品名称": item.get("title", ""),
+            "品牌": item.get("brand", ""),
+            "分类": item.get("categories", "").replace("[:ATTR:]", " > "),
+            "是否有货": True,
+            "库存数量": int(item.get("inventory_level", 0) or 0),
+            "商品链接": item.get("link", ""),
+            "原始ID": str(item.get("product_id", "")),
+            "产品大类": "烟斗丝",
         }
         variants = item.get("bigcommerce_variants", [])
         if variants:
             for v in variants:
                 row = dict(base)
-                row["sku"] = v.get("sku", "")
+                row["库存编码"] = v.get("sku", "")
                 try:
                     price = float(v.get("list_price", v.get("price", 0)))
                 except (ValueError, TypeError):
                     price = 0
-                row["price_original"] = price
-                row["currency"] = "USD"
-                row["price_usd"] = price
-                row["price_cny"] = _usd_to_cny(price)
+                row["原始价格"] = price
+                row["原始币种"] = "USD"
+                row["美元价格"] = price
+                row["人民币价格"] = _usd_to_cny(price)
 
                 options = v.get("options", {})
                 weight_g = 0
@@ -184,22 +225,22 @@ def _nov(items):
                         val = float(m.group(1))
                         u = m.group(2).lower()
                         weight_g = round(val * 28.3495, 1) if u in ("oz", "ounce") else val
-                row["weight_g"] = weight_g
-                row["spec"] = weight_str
-                row["in_stock"] = v.get("available", "1") in ("1", True)
+                row["重量(克)"] = weight_g
+                row["规格"] = weight_str
+                row["是否有货"] = v.get("available", "1") in ("1", True)
                 rows.append(row)
         else:
-            base["sku"] = item.get("product_code", "")
+            base["库存编码"] = item.get("product_code", "")
             try:
                 price = float(item.get("list_price", item.get("price", 0)))
             except (ValueError, TypeError):
                 price = 0
-            base["price_original"] = price
-            base["currency"] = "USD"
-            base["price_usd"] = price
-            base["price_cny"] = _usd_to_cny(price)
-            base["weight_g"] = 0
-            base["spec"] = ""
+            base["原始价格"] = price
+            base["原始币种"] = "USD"
+            base["美元价格"] = price
+            base["人民币价格"] = _usd_to_cny(price)
+            base["重量(克)"] = 0
+            base["规格"] = ""
             rows.append(base)
     return rows
 
@@ -210,30 +251,34 @@ def _sp(items):
         price = float(item.get("price_usd", 0))
         g = item.get("weight_g", 0)
         rows.append({
-            "channel": "sp",
-            "sku": item.get("sku", ""),
-            "product_name": item.get("full_title", item.get("name", "")),
-            "brand": item.get("brand", ""),
-            "category": "",
-            "price_original": price,
-            "currency": "USD",
-            "price_usd": price,
-            "price_cny": _usd_to_cny(price),
-            "weight_g": g,
-            "spec": f"{g}g",
-            "in_stock": True,
-            "stock_qty": 0,
-            "url": "",
-            "original_id": item.get("sku", ""),
+            "渠道": "sp",
+            "库存编码": item.get("sku", ""),
+            "产品名称": item.get("full_title", item.get("name", "")),
+            "品牌": item.get("brand", ""),
+            "分类": "",
+            "原始价格": price,
+            "原始币种": "USD",
+            "美元价格": price,
+            "人民币价格": _usd_to_cny(price),
+            "重量(克)": g,
+            "规格": f"{g}g",
+            "是否有货": True,
+            "库存数量": 0,
+            "商品链接": "",
+            "原始ID": item.get("sku", ""),
+            "产品大类": "烟斗丝",
         })
     return rows
 
 
 # ── 统一输出字段 ──
 DWD_FIELDS = [
-    "channel", "sku", "product_name", "brand", "category",
-    "price_original", "currency", "price_usd", "price_cny",
-    "weight_g", "spec", "in_stock", "stock_qty", "url", "original_id",
+    "渠道", "库存编码", "产品名称", "品牌", "分类",
+    "原始价格", "原始币种", "美元价格", "人民币价格",
+    "重量(克)", "规格", "是否有货", "库存数量",
+    "成分", "切工", "劲道", "口味",
+    "商品链接", "原始ID",
+    "产品大类",
 ]
 
 SOURCES = [
@@ -277,10 +322,19 @@ def main():
     # 渠道统计
     ch = {}
     for r in all_rows:
-        c = r["channel"]
+        c = r["渠道"]
         ch[c] = ch.get(c, 0) + 1
     print(f"\n各渠道行数:")
     for k, v in sorted(ch.items()):
+        print(f"  {k}: {v}")
+
+    # 产品大类统计
+    pt = {}
+    for r in all_rows:
+        p = r.get("产品大类", "未知")
+        pt[p] = pt.get(p, 0) + 1
+    print(f"\n产品大类分布:")
+    for k, v in sorted(pt.items(), key=lambda x: -x[1]):
         print(f"  {k}: {v}")
 
 

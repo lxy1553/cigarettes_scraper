@@ -1,17 +1,15 @@
 """
 Build DWS (summary) and ADS (application) layers from DWD.
+All field names in Chinese, includes product type classification.
 """
 import json
 import csv
 import os
 from collections import defaultdict
 
-# ── 工具函数 ──
-
 def load_dwd():
     with open("data/dwd/product_detail.json", encoding="utf-8") as f:
         return json.load(f)
-
 
 def save_csv(rows, path, fieldnames):
     os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
@@ -21,164 +19,170 @@ def save_csv(rows, path, fieldnames):
         w.writerows(rows)
     print(f"  CSV: {path} ({len(rows)} rows)")
 
-
 def save_json(data, path):
     os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
     print(f"  JSON: {path}")
 
-
 # ════════════════════════════════════════════════════════════
-# DWS 汇总层
+# DWS
 # ════════════════════════════════════════════════════════════
 
 def build_dws_channel_overview(dwd):
-    """各渠道概览：产品数、价格区间、重量区间"""
-    ch_data = defaultdict(lambda: {"products": set(), "prices": [], "weights": [], "brands": set()})
-    for row in dwd:
-        c = row["channel"]
-        ch_data[c]["products"].add(row.get("original_id", ""))
-        ch_data[c]["brands"].add(row["brand"])
+    """各渠道概览"""
+    ch = defaultdict(lambda: {"pids": set(), "brands": set(), "prices": [], "weights": [], "types": set()})
+    for r in dwd:
+        c = r["渠道"]
+        ch[c]["pids"].add(r["原始ID"])
+        ch[c]["brands"].add(r["品牌"])
+        ch[c]["types"].add(r.get("产品大类", ""))
+        try: ch[c]["prices"].append(float(r["人民币价格"]))
+        except: pass
         try:
-            ch_data[c]["prices"].append(float(row["price_cny"]))
-        except (ValueError, TypeError):
-            pass
-        try:
-            w = float(row["weight_g"])
-            if w > 0:
-                ch_data[c]["weights"].append(w)
-        except (ValueError, TypeError):
-            pass
+            w = float(r["重量(克)"])
+            if w > 0: ch[c]["weights"].append(w)
+        except: pass
 
     rows = []
-    fields = ["渠道", "产品数", "品牌数", "最低价(CNY)", "最高价(CNY)", "均价(CNY)", "最小重量(g)", "最大重量(g)"]
-    for ch, data in sorted(ch_data.items()):
-        prices = data["prices"]
-        weights = data["weights"]
+    fields = ["渠道", "产品数", "品牌数", "产品大类", "最低价(¥)", "最高价(¥)", "均价(¥)", "最小重量(g)", "最大重量(g)"]
+    for c, d in sorted(ch.items()):
+        p = d["prices"]; w = d["weights"]
         rows.append({
-            "渠道": ch,
-            "产品数": len(data["products"]),
-            "品牌数": len(data["brands"]),
-            "最低价(CNY)": round(min(prices), 2) if prices else "",
-            "最高价(CNY)": round(max(prices), 2) if prices else "",
-            "均价(CNY)": round(sum(prices) / len(prices), 2) if prices else "",
-            "最小重量(g)": round(min(weights), 1) if weights else "",
-            "最大重量(g)": round(max(weights), 1) if weights else "",
+            "渠道": c, "产品数": len(d["pids"]), "品牌数": len(d["brands"]),
+            "产品大类": " | ".join(sorted(d["types"])),
+            "最低价(¥)": round(min(p),2) if p else "",
+            "最高价(¥)": round(max(p),2) if p else "",
+            "均价(¥)": round(sum(p)/len(p),2) if p else "",
+            "最小重量(g)": round(min(w),1) if w else "",
+            "最大重量(g)": round(max(w),1) if w else "",
         })
     save_csv(rows, "data/dws/channel_overview.csv", fields)
-    return rows
-
 
 def build_dws_price_by_brand(dwd):
-    """按品牌的价格对比"""
-    brand_data = defaultdict(lambda: {"channels": set(), "prices_cny": [], "prices_usd": [], "weights": []})
-    for row in dwd:
-        b = row["brand"] or "未知"
-        brand_data[b]["channels"].add(row["channel"])
+    """按品牌价格对比"""
+    bd = defaultdict(lambda: {"chs": set(), "pcny": [], "pusd": [], "ws": [], "types": set()})
+    for r in dwd:
+        b = r["品牌"] or "未知"
+        bd[b]["chs"].add(r["渠道"])
+        bd[b]["types"].add(r.get("产品大类", ""))
+        try: bd[b]["pcny"].append(float(r["人民币价格"]))
+        except: pass
+        try: bd[b]["pusd"].append(float(r["美元价格"]))
+        except: pass
         try:
-            brand_data[b]["prices_cny"].append(float(row["price_cny"]))
-            brand_data[b]["prices_usd"].append(float(row["price_usd"]))
-        except (ValueError, TypeError):
-            pass
-        try:
-            w = float(row["weight_g"])
-            if w > 0:
-                brand_data[b]["weights"].append(w)
-        except (ValueError, TypeError):
-            pass
+            w = float(r["重量(克)"])
+            if w > 0: bd[b]["ws"].append(w)
+        except: pass
 
     rows = []
-    fields = ["品牌", "覆盖渠道", "渠道数", "产品数", "最低价(CNY)", "最高价(CNY)", "均价(CNY)", "均价(USD)", "最小重量(g)", "最大重量(g)"]
-    for brand, data in sorted(brand_data.items()):
-        p = data["prices_cny"]
-        pu = data["prices_usd"]
-        w = data["weights"]
+    fields = ["品牌", "覆盖渠道", "产品大类", "产品数", "最低价(¥)", "最高价(¥)", "均价(¥)", "均价($)", "最小重量(g)", "最大重量(g)"]
+    for b, d in sorted(bd.items()):
+        pc = d["pcny"]; pu = d["pusd"]; ws = d["ws"]
         rows.append({
-            "品牌": brand,
-            "覆盖渠道": " | ".join(sorted(data["channels"])),
-            "渠道数": len(data["channels"]),
-            "产品数": len(p),
-            "最低价(CNY)": round(min(p), 2) if p else "",
-            "最高价(CNY)": round(max(p), 2) if p else "",
-            "均价(CNY)": round(sum(p) / len(p), 2) if p else "",
-            "均价(USD)": round(sum(pu) / len(pu), 2) if pu else "",
-            "最小重量(g)": round(min(w), 1) if w else "",
-            "最大重量(g)": round(max(w), 1) if w else "",
+            "品牌": b, "覆盖渠道": " | ".join(sorted(d["chs"])),
+            "产品大类": " | ".join(sorted(d["types"])),
+            "产品数": len(pc),
+            "最低价(¥)": round(min(pc),2) if pc else "",
+            "最高价(¥)": round(max(pc),2) if pc else "",
+            "均价(¥)": round(sum(pc)/len(pc),2) if pc else "",
+            "均价($)": round(sum(pu)/len(pu),2) if pu else "",
+            "最小重量(g)": round(min(ws),1) if ws else "",
+            "最大重量(g)": round(max(ws),1) if ws else "",
         })
     save_csv(rows, "data/dws/price_by_brand.csv", fields)
-    return rows
 
+def build_dws_price_by_type(dwd):
+    """按产品大类汇总"""
+    td = defaultdict(lambda: {"chs": set(), "brands": set(), "pcny": [], "ws": []})
+    for r in dwd:
+        t = r.get("产品大类", "其他")
+        td[t]["chs"].add(r["渠道"])
+        td[t]["brands"].add(r["品牌"])
+        try: td[t]["pcny"].append(float(r["人民币价格"]))
+        except: pass
+        try:
+            w = float(r["重量(克)"])
+            if w > 0: td[t]["ws"].append(w)
+        except: pass
+
+    rows = []
+    fields = ["产品大类", "覆盖渠道", "品牌数", "产品数", "最低价(¥)", "最高价(¥)", "均价(¥)", "最小重量(g)", "最大重量(g)"]
+    for t, d in sorted(td.items(), key=lambda x: -len(x[1]["pcny"])):
+        pc = d["pcny"]; ws = d["ws"]
+        rows.append({
+            "产品大类": t, "覆盖渠道": " | ".join(sorted(d["chs"])),
+            "品牌数": len(d["brands"]), "产品数": len(pc),
+            "最低价(¥)": round(min(pc),2) if pc else "",
+            "最高价(¥)": round(max(pc),2) if pc else "",
+            "均价(¥)": round(sum(pc)/len(pc),2) if pc else "",
+            "最小重量(g)": round(min(ws),1) if ws else "",
+            "最大重量(g)": round(max(ws),1) if ws else "",
+        })
+    save_csv(rows, "data/dws/price_by_type.csv", fields)
 
 def build_dws_price_by_weight_range(dwd):
-    """按重量段的价格对比"""
+    """按重量段分布"""
     ranges = [
-        ("≤50g", 0, 50),
-        ("51-100g", 50, 100),
-        ("101-200g", 100, 200),
-        ("201-500g", 200, 500),
-        (">500g", 500, float("inf")),
-        ("未知重量", -1, 0),
+        ("≤50g", 0, 50), ("51-100g", 50, 100), ("101-200g", 100, 200),
+        ("201-500g", 200, 500), (">500g", 500, float("inf")), ("未知重量", -1, 0),
     ]
-
-    range_data = {label: {"channels": set(), "prices_cny": []} for label, _, _ in ranges}
-
-    for row in dwd:
-        try:
-            w = float(row["weight_g"])
-        except (ValueError, TypeError):
-            w = -1
-        for label, lo, hi in ranges:
+    rd = {l: {"chs": set(), "pcny": [], "types": set()} for l,_,_ in ranges}
+    for r in dwd:
+        try: w = float(r["重量(克)"])
+        except: w = -1
+        for l, lo, hi in ranges:
             if lo < w <= hi:
-                range_data[label]["channels"].add(row["channel"])
-                try:
-                    range_data[label]["prices_cny"].append(float(row["price_cny"]))
-                except (ValueError, TypeError):
-                    pass
+                rd[l]["chs"].add(r["渠道"])
+                rd[l]["types"].add(r.get("产品大类", ""))
+                try: rd[l]["pcny"].append(float(r["人民币价格"]))
+                except: pass
                 break
 
     rows = []
-    fields = ["重量段", "产品数", "覆盖渠道", "最低价(CNY)", "最高价(CNY)", "均价(CNY)"]
-    for label, _, _ in ranges:
-        d = range_data[label]
-        p = d["prices_cny"]
-        if not p:
-            continue
+    fields = ["重量段", "产品数", "覆盖渠道", "产品大类", "最低价(¥)", "最高价(¥)", "均价(¥)"]
+    for l, _, _ in ranges:
+        d = rd[l]; p = d["pcny"]
+        if not p: continue
         rows.append({
-            "重量段": label,
-            "产品数": len(p),
-            "覆盖渠道": " | ".join(sorted(d["channels"])),
-            "最低价(CNY)": round(min(p), 2),
-            "最高价(CNY)": round(max(p), 2),
-            "均价(CNY)": round(sum(p) / len(p), 2),
+            "重量段": l, "产品数": len(p),
+            "覆盖渠道": " | ".join(sorted(d["chs"])),
+            "产品大类": " | ".join(sorted(d["types"])),
+            "最低价(¥)": round(min(p),2), "最高价(¥)": round(max(p),2), "均价(¥)": round(sum(p)/len(p),2),
         })
     save_csv(rows, "data/dws/price_by_weight_range.csv", fields)
-    return rows
 
 
 # ════════════════════════════════════════════════════════════
-# ADS 应用层
+# ADS
 # ════════════════════════════════════════════════════════════
 
-def build_ads_product_summary(dwd):
-    """前端用产品汇总 JSON"""
-    summary = []
-    for row in dwd:
-        summary.append({
-            "渠道": row["channel"],
-            "产品名称": row["product_name"],
-            "品牌": row["brand"],
-            "分类": row["category"],
-            "美元价格": row["price_usd"],
-            "人民币价格": row["price_cny"],
-            "重量(g)": row["weight_g"],
-            "规格": row["spec"],
-            "库存": "有货" if row["in_stock"] else "无货",
-            "链接": row["url"],
+def build_ads_products(dwd):
+    """应用层产品数据"""
+    ads = []
+    for r in dwd:
+        ads.append({
+            "渠道": r["渠道"], "产品名称": r["产品名称"], "品牌": r["品牌"],
+            "产品大类": r.get("产品大类", ""), "分类": r["分类"],
+            "美元价格": r["美元价格"], "人民币价格": r["人民币价格"],
+            "重量(克)": r["重量(克)"], "规格": r["规格"],
+            "是否有货": "有货" if r["是否有货"] else "无货",
+            "商品链接": r["商品链接"],
         })
-    save_json(summary, "data/ads/products.json")
-    return summary
+    save_json(ads, "data/ads/products.json")
 
+def build_ads_type_summary(dwd):
+    """按产品大类的应用层汇总"""
+    td = defaultdict(list)
+    for r in dwd:
+        td[r.get("产品大类", "其他")].append({
+            "渠道": r["渠道"], "产品名称": r["产品名称"], "品牌": r["品牌"],
+            "原始价格": r["原始价格"], "原始币种": r["原始币种"],
+            "美元价格": r["美元价格"], "人民币价格": r["人民币价格"],
+            "重量(克)": r["重量(克)"], "规格": r["规格"],
+            "是否有货": "有货" if r["是否有货"] else "无货",
+        })
+    save_json(dict(td), "data/ads/products_by_type.json")
 
 # ════════════════════════════════════════════════════════════
 
@@ -190,16 +194,17 @@ def main():
     dwd = load_dwd()
     print(f"\nLoaded DWD: {len(dwd)} rows\n")
 
-    print("── DWS 汇总层 ──")
+    print("── DWS ──")
     build_dws_channel_overview(dwd)
     build_dws_price_by_brand(dwd)
+    build_dws_price_by_type(dwd)
     build_dws_price_by_weight_range(dwd)
 
-    print("\n── ADS 应用层 ──")
-    build_ads_product_summary(dwd)
+    print("\n── ADS ──")
+    build_ads_products(dwd)
+    build_ads_type_summary(dwd)
 
     print("\nDone.")
-
 
 if __name__ == "__main__":
     main()
