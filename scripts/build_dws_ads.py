@@ -92,6 +92,36 @@ def build_dws_price_by_brand(dwd):
         })
     save_csv(rows, "data/dws/price_by_brand.csv", fields)
 
+
+def build_dws_price_calculations(dwd):
+    """价格计算表：含税价、克单价、500g单价、20支成本"""
+    rows = []
+    fields = ["渠道", "产品名称", "品牌", "产品大类", "重量(克)",
+              "商品价¥", "含税价¥", "克单价¥/g", "500g单价¥", "20支成本¥"]
+    for r in dwd:
+        price_cny = r["人民币价格"]
+        weight = r["重量(克)"]
+        tax_price = round(price_cny * 1.5, 2)
+        per_g = ""
+        per_500g = ""
+        cost_20 = ""
+        if isinstance(weight, (int, float)) and weight > 0:
+            per_g = round(tax_price / weight, 2)
+            per_500g = round(per_g * 500, 2)
+            cost_20 = round(12 * per_g + 3.50, 2)
+        rows.append({
+            "渠道": r["渠道"], "产品名称": r["产品名称"], "品牌": r["品牌"],
+            "产品大类": r.get("产品大类", ""), "重量(克)": weight,
+            "商品价¥": price_cny, "含税价¥": tax_price,
+            "克单价¥/g": per_g, "500g单价¥": per_500g, "20支成本¥": cost_20,
+        })
+    save_csv(rows, "data/dws/price_calculations.csv", fields)
+    # 只取有重量数据的行单独保存
+    has_weight = [r for r in rows if r["克单价¥/g"] != ""]
+    save_csv(has_weight, "data/dws/price_per_gram.csv",
+             ["渠道", "产品名称", "品牌", "产品大类", "重量(克)",
+              "含税价¥", "克单价¥/g", "500g单价¥", "20支成本¥"])
+
 def build_dws_price_by_type(dwd):
     """按产品大类汇总"""
     td = defaultdict(lambda: {"chs": set(), "brands": set(), "pcny": [], "ws": []})
@@ -199,6 +229,7 @@ def main():
     build_dws_price_by_brand(dwd)
     build_dws_price_by_type(dwd)
     build_dws_price_by_weight_range(dwd)
+    build_dws_price_calculations(dwd)
 
     print("\n── ADS ──")
     build_ads_products(dwd)
