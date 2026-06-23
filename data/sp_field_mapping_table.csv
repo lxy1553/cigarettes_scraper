@@ -51,17 +51,5 @@ Family: AromaticCut: Ribbon
 Family: EnglishCut: Ribbon
 Family: VirginiaCut: Coins
 Family: VirginiaCut: Flake",str
-ppm,每克价格,每克价格（美分/g）,10/10 (100%),"5个
-108.56
-130.83
-152.5
-207.9
-254.08",float
-c20,20支成本,20支持烟丝成本（含耗材）,10/10 (100%),"5个
-3.04
-3.66
-4.27
-5.82
-7.11",float
-source,数据来源类型,"tinned=罐装, bulk=散装",10/10 (100%),"1个
+source,数据来源,"tinned=罐装, bulk=散装",10/10 (100%),"1个
 tinned",str
