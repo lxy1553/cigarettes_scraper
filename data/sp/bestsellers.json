@@ -48,7 +48,12 @@
           "price": "11757",
           "qty": "1"
         }
-      ]
+      ],
+      "brand": "Lane Limited",
+      "components": "Virginia, Black Cavendish",
+      "family": "Aromatic",
+      "cut": "Ribbon",
+      "strength": ""
     },
     {
       "rank": "#2",
@@ -93,7 +98,12 @@
           "price": "21842",
           "qty": "1"
         }
-      ]
+      ],
+      "brand": "Peter Stokkebye",
+      "components": "Virginia, Perique, Black Cavendish",
+      "family": "Virginia",
+      "cut": "Coins",
+      "strength": ""
     },
     {
       "rank": "#3",
@@ -138,7 +148,12 @@
           "price": "11743",
           "qty": "1"
         }
-      ]
+      ],
+      "brand": "Peter Stokkebye",
+      "components": "Virginia, Perique",
+      "family": "Virginia",
+      "cut": "Flake",
+      "strength": ""
     },
     {
       "rank": "#4",
@@ -183,7 +198,12 @@
           "price": "395710",
           "qty": "1"
         }
-      ]
+      ],
+      "brand": "Erik Stokkebye 4th Generation",
+      "components": "Virginia, Perique",
+      "family": "Virginia",
+      "cut": "Flake",
+      "strength": ""
     },
     {
       "rank": "#5",
@@ -223,7 +243,12 @@
           "price": "135019",
           "qty": "1"
         }
-      ]
+      ],
+      "brand": "Cornell & Diehl",
+      "components": "Virginia",
+      "family": "Aromatic",
+      "cut": "Ribbon",
+      "strength": ""
     },
     {
       "rank": "#6",
@@ -268,7 +293,12 @@
           "price": "11742",
           "qty": "1"
         }
-      ]
+      ],
+      "brand": "Peter Stokkebye",
+      "components": "Virginia",
+      "family": "Virginia",
+      "cut": "Flake",
+      "strength": ""
     },
     {
       "rank": "#7",
@@ -313,7 +343,12 @@
           "price": "384401",
           "qty": "1"
         }
-      ]
+      ],
+      "brand": "Daughters & Ryan",
+      "components": "Virginia",
+      "family": "Virginia",
+      "cut": "Shag",
+      "strength": ""
     },
     {
       "rank": "#8",
@@ -358,7 +393,12 @@
           "price": "151152",
           "qty": "1"
         }
-      ]
+      ],
+      "brand": "Arango",
+      "components": "Virginia, Latakia, Orientals, Black Cavendish",
+      "family": "English",
+      "cut": "Ribbon",
+      "strength": ""
     },
     {
       "rank": "#9",
@@ -403,7 +443,12 @@
           "price": "713982",
           "qty": "1"
         }
-      ]
+      ],
+      "brand": "Erik Stokkebye 4th Generation",
+      "components": "Virginia, Perique",
+      "family": "Virginia",
+      "cut": "Coins",
+      "strength": ""
     },
     {
       "rank": "#10",
@@ -443,7 +488,12 @@
           "price": "123402",
           "qty": "1"
         }
-      ]
+      ],
+      "brand": "Cornell & Diehl",
+      "components": "Virginia, Perique, Burley",
+      "family": "Burley",
+      "cut": "Ribbon",
+      "strength": ""
     },
     {
       "rank": "#11",
@@ -488,7 +538,12 @@
           "price": "11758",
           "qty": "1"
         }
-      ]
+      ],
+      "brand": "Lane Limited",
+      "components": "Black Cavendish",
+      "family": "Aromatic",
+      "cut": "Ribbon",
+      "strength": ""
     },
     {
       "rank": "#12",
@@ -528,7 +583,12 @@
           "price": "151168",
           "qty": "1"
         }
-      ]
+      ],
+      "brand": "Sutliff",
+      "components": "Virginia, Burley, Black Cavendish",
+      "family": "Aromatic",
+      "cut": "Ribbon",
+      "strength": ""
     },
     {
       "rank": "#13",
@@ -573,7 +633,12 @@
           "price": "11759",
           "qty": "1"
         }
-      ]
+      ],
+      "brand": "Lane Limited",
+      "components": "Virginia, Burley, Black Cavendish",
+      "family": "Aromatic",
+      "cut": "Ribbon",
+      "strength": ""
     },
     {
       "rank": "#14",
@@ -613,7 +678,12 @@
           "price": "66070",
           "qty": "1"
         }
-      ]
+      ],
+      "brand": "Cornell & Diehl",
+      "components": "Virginia, Perique",
+      "family": "Virginia",
+      "cut": "Ribbon",
+      "strength": ""
     },
     {
       "rank": "#15",
@@ -658,7 +728,12 @@
           "price": "11748",
           "qty": "1"
         }
-      ]
+      ],
+      "brand": "Peter Stokkebye",
+      "components": "Virginia, Latakia, Burley, Black Cavendish",
+      "family": "English",
+      "cut": "Ribbon",
+      "strength": ""
     },
     {
       "rank": "#16",
@@ -703,7 +778,12 @@
           "price": "123304",
           "qty": "1"
         }
-      ]
+      ],
+      "brand": "Lane Limited",
+      "components": "Virginia, Burley, Black Cavendish",
+      "family": "Aromatic",
+      "cut": "Ribbon",
+      "strength": ""
     },
     {
       "rank": "#17",
@@ -748,7 +828,12 @@
           "price": "11747",
           "qty": "1"
         }
-      ]
+      ],
+      "brand": "Peter Stokkebye",
+      "components": "Virginia, Burley",
+      "family": "Burley",
+      "cut": "Cube Cut",
+      "strength": ""
     },
     {
       "rank": "#18",
@@ -793,7 +878,12 @@
           "price": "4002",
           "qty": "1"
         }
-      ]
+      ],
+      "brand": "Gawith Hoggarth & Co.",
+      "components": "Virginia, Burley",
+      "family": "Burley",
+      "cut": "Flake",
+      "strength": ""
     },
     {
       "rank": "#19",
@@ -802,7 +892,12 @@
       "price": "",
       "weight_oz": "",
       "in_stock": true,
-      "pricing_options": []
+      "pricing_options": [],
+      "brand": "Gawith Hoggarth & Co.",
+      "components": "Virginia, Perique",
+      "family": "Virginia",
+      "cut": "Flake",
+      "strength": ""
     },
     {
       "rank": "#20",
@@ -842,7 +937,12 @@
           "price": "66071",
           "qty": "1"
         }
-      ]
+      ],
+      "brand": "Cornell & Diehl",
+      "components": "Virginia, Perique, Burley",
+      "family": "Burley",
+      "cut": "Ribbon",
+      "strength": ""
     }
   ]
 }
