@@ -1,0 +1,229 @@
+{
+  "source": "smokingpipes.com",
+  "url": "https://www.smokingpipes.com/bestselling/?page=bulk-pipe-tobacco&period=180",
+  "type": "散装烟丝(bulk_pipe_tobacco)",
+  "weight_unit": "oz",
+  "count": 20,
+  "products": [
+    {
+      "rank": 1,
+      "name": "1-Q",
+      "brand": "Lane Limited",
+      "family": "Aromatic",
+      "cut": "Ribbon",
+      "in_stock": true,
+      "product_link": "https://www.smokingpipes.com/pipe-tobacco/lane/1-q/product_id/11757",
+      "price": "",
+      "price_per_oz": ""
+    },
+    {
+      "rank": 2,
+      "name": "PS403 Luxury Bullseye Flake",
+      "brand": "Peter Stokkebye",
+      "family": "Virginia",
+      "cut": "Coins",
+      "in_stock": true,
+      "product_link": "https://www.smokingpipes.com/pipe-tobacco/stokkebye/ps403-luxury-bullseye-flake/product_id/21842",
+      "price": "",
+      "price_per_oz": ""
+    },
+    {
+      "rank": 3,
+      "name": "PS400 Luxury Navy Flake",
+      "brand": "Peter Stokkebye",
+      "family": "Virginia",
+      "cut": "Flake",
+      "in_stock": true,
+      "product_link": "https://www.smokingpipes.com/pipe-tobacco/stokkebye/ps400-luxury-navy-flake/product_id/11743",
+      "price": "",
+      "price_per_oz": ""
+    },
+    {
+      "rank": 4,
+      "name": "Evening Flake",
+      "brand": "Erik Stokkebye 4th Generation",
+      "family": "Virginia",
+      "cut": "Flake",
+      "in_stock": true,
+      "product_link": "https://www.smokingpipes.com/pipe-tobacco/erik-stokkebye/evening-flake/product_id/395710",
+      "price": "",
+      "price_per_oz": ""
+    },
+    {
+      "rank": 5,
+      "name": "Autumn Evening",
+      "brand": "Cornell & Diehl",
+      "family": "Aromatic",
+      "cut": "Ribbon",
+      "in_stock": true,
+      "product_link": "https://www.smokingpipes.com/pipe-tobacco/cornell-diehl/autumn-evening/product_id/135019",
+      "price": "",
+      "price_per_oz": ""
+    },
+    {
+      "rank": 6,
+      "name": "PS402 Luxury Twist Flake",
+      "brand": "Peter Stokkebye",
+      "family": "Virginia",
+      "cut": "Flake",
+      "in_stock": true,
+      "product_link": "https://www.smokingpipes.com/pipe-tobacco/stokkebye/ps402-luxury-twist-flake/product_id/11742",
+      "price": "",
+      "price_per_oz": ""
+    },
+    {
+      "rank": 7,
+      "name": "Three Sails",
+      "brand": "Daughters & Ryan",
+      "family": "Virginia",
+      "cut": "Shag",
+      "in_stock": true,
+      "product_link": "https://www.smokingpipes.com/pipe-tobacco/daughters-ryan/three-sails/product_id/11763",
+      "price": "",
+      "price_per_oz": ""
+    },
+    {
+      "rank": 8,
+      "name": "Balkan Supreme",
+      "brand": "Arango",
+      "family": "Balkan",
+      "cut": "Ribbon",
+      "in_stock": true,
+      "product_link": "https://www.smokingpipes.com/pipe-tobacco/arango/balkan-supreme/product_id/11759",
+      "price": "",
+      "price_per_oz": ""
+    },
+    {
+      "rank": 9,
+      "name": "Black Dot",
+      "brand": "Erik Stokkebye 4th Generation",
+      "family": "Virginia/Perique",
+      "cut": "Coins",
+      "in_stock": true,
+      "product_link": "https://www.smokingpipes.com/pipe-tobacco/erik-stokkebye/black-dot/product_id/395711",
+      "price": "",
+      "price_per_oz": ""
+    },
+    {
+      "rank": 10,
+      "name": "Haunted Bookshop",
+      "brand": "Cornell & Diehl",
+      "family": "Burley",
+      "cut": "Ribbon",
+      "in_stock": true,
+      "product_link": "https://www.smokingpipes.com/pipe-tobacco/cornell-diehl/haunted-bookshop/product_id/11783",
+      "price": "",
+      "price_per_oz": ""
+    },
+    {
+      "rank": 11,
+      "name": "BCA",
+      "brand": "Lane Limited",
+      "family": "Aromatic",
+      "cut": "Ribbon",
+      "in_stock": true,
+      "product_link": "https://www.smokingpipes.com/pipe-tobacco/lane/bca/product_id/11758",
+      "price": "",
+      "price_per_oz": ""
+    },
+    {
+      "rank": 12,
+      "name": "Z92 Vanilla Custard",
+      "brand": "Sutliff",
+      "family": "Aromatic",
+      "cut": "Ribbon",
+      "in_stock": true,
+      "product_link": "https://www.smokingpipes.com/pipe-tobacco/sutliff/z92-vanilla-custard/product_id/11833",
+      "price": "",
+      "price_per_oz": ""
+    },
+    {
+      "rank": 13,
+      "name": "RLP-6",
+      "brand": "Lane Limited",
+      "family": "Aromatic",
+      "cut": "Ribbon",
+      "in_stock": true,
+      "product_link": "https://www.smokingpipes.com/pipe-tobacco/lane/rlp-6/product_id/11761",
+      "price": "",
+      "price_per_oz": ""
+    },
+    {
+      "rank": 14,
+      "name": "Bayou Morning",
+      "brand": "Cornell & Diehl",
+      "family": "Virginia/Perique",
+      "cut": "Ribbon",
+      "in_stock": true,
+      "product_link": "https://www.smokingpipes.com/pipe-tobacco/cornell-diehl/bayou-morning/product_id/11791",
+      "price": "",
+      "price_per_oz": ""
+    },
+    {
+      "rank": 15,
+      "name": "PS17 English Luxury",
+      "brand": "Peter Stokkebye",
+      "family": "English",
+      "cut": "Ribbon",
+      "in_stock": true,
+      "product_link": "https://www.smokingpipes.com/pipe-tobacco/stokkebye/ps17-english-luxury/product_id/11850",
+      "price": "",
+      "price_per_oz": ""
+    },
+    {
+      "rank": 16,
+      "name": "Black Raspberry",
+      "brand": "Lane Limited",
+      "family": "Aromatic",
+      "cut": "Ribbon",
+      "in_stock": true,
+      "product_link": "https://www.smokingpipes.com/pipe-tobacco/lane/black-raspberry/product_id/11773",
+      "price": "",
+      "price_per_oz": ""
+    },
+    {
+      "rank": 17,
+      "name": "PS41 Cube Cut",
+      "brand": "Peter Stokkebye",
+      "family": "Burley",
+      "cut": "Cube Cut",
+      "in_stock": true,
+      "product_link": "https://www.smokingpipes.com/pipe-tobacco/stokkebye/ps41-cube-cut/product_id/21921",
+      "price": "",
+      "price_per_oz": ""
+    },
+    {
+      "rank": 18,
+      "name": "Rum Flake",
+      "brand": "Gawith Hoggarth & Co.",
+      "family": "Virginia",
+      "cut": "Flake",
+      "in_stock": true,
+      "product_link": "https://www.smokingpipes.com/pipe-tobacco/gawith-hoggarth/rum-flake/product_id/11853",
+      "price": "",
+      "price_per_oz": ""
+    },
+    {
+      "rank": 19,
+      "name": "Louisiana Flake",
+      "brand": "Gawith Hoggarth & Co.",
+      "family": "Virginia/Perique",
+      "cut": "Flake",
+      "in_stock": false,
+      "product_link": "https://www.smokingpipes.com/pipe-tobacco/gawith-hoggarth/louisiana-flake/product_id/167767",
+      "price": "",
+      "price_per_oz": ""
+    },
+    {
+      "rank": 20,
+      "name": "Old Joe Krantz",
+      "brand": "Cornell & Diehl",
+      "family": "Burley",
+      "cut": "Ribbon",
+      "in_stock": true,
+      "product_link": "https://www.smokingpipes.com/pipe-tobacco/cornell-diehl/old-joe-krantz/product_id/11787",
+      "price": "",
+      "price_per_oz": ""
+    }
+  ]
+}
