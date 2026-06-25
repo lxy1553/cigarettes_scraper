@@ -401,46 +401,66 @@ def _nov(items):
 
 
 def _sp(items):
-    """SP channel: smokingpipes.com bulk pipe tobacco (weight in oz)"""
+    """SP channel: smokingpipes.com bulk pipe tobacco — expand all pricing options"""
     rows = []
     prod_list = items.get("products", items) if isinstance(items, dict) else items
     if isinstance(prod_list, dict):
         prod_list = [prod_list]
 
-    for prod in prod_list:
-        price = float(prod.get("price_usd", 0))
-        # Keep weight in oz (no conversion to grams)
-        weight_oz = prod.get("weight_oz", "")
-        weight_g = 0
-        try:
-            # Store raw oz value for reference
-            oz_val = float(str(weight_oz).replace('oz', '').replace('lb', '').strip())
-            weight_g = oz_val * 28.35 if 'oz' in str(weight_oz) else 0
-        except:
-            oz_val = 0
+    OPTIONS = [
+        ("option_1oz", "1oz", 1),
+        ("option_2oz", "2oz", 2),
+        ("option_4oz", "4oz", 4),
+        ("option_8oz", "8oz", 8),
+        ("option_16oz", "16oz", 16),
+        ("option_5lbs", "5lbs", 80),
+    ]
 
-        rows.append({
-            "渠道": "sp",
-            "库存编码": prod.get("sku", ""),
-            "产品名称": prod.get("full_title", prod.get("name", "")),
-            "品牌": prod.get("brand", ""),
-            "分类": prod.get("family", ""),
-            "原始价格": price,
-            "原始币种": "USD",
-            "美元价格": price,
-            "人民币价格": _usd_to_cny(price),
-            "重量(克)": weight_g,
-            "规格": weight_oz,  # Keep oz format (e.g. "1oz")
-            "是否有货": prod.get("in_stock", True),
-            "库存数量": 0,
-            "商品链接": prod.get("link", ""),
-            "原始ID": prod.get("sku", ""),
-            "产品大类": "烟斗丝",
-            "成分": prod.get("components", ""),
-            "切工": prod.get("cut", ""),
-            "劲道": prod.get("strength", ""),
-            "口味": prod.get("family", ""),
-        })
+    for prod in prod_list:
+        name = prod.get("full_title", prod.get("name", ""))
+        brand = prod.get("brand", "")
+        components = prod.get("components", "")
+        cut = prod.get("cut", "")
+        strength = prod.get("strength", "")
+        family = prod.get("family", "")
+        link = prod.get("link", "")
+
+        for opt_key, opt_label, opt_oz in OPTIONS:
+            price_str = prod.get(opt_key, "")
+            if not price_str:
+                continue
+            try:
+                price_usd = round(float(price_str), 2)
+            except (ValueError, TypeError):
+                continue
+            if price_usd <= 0:
+                continue
+
+            weight_g = round(opt_oz * 28.3495, 2)
+
+            rows.append({
+                "渠道": "sp",
+                "库存编码": f"{opt_label}",
+                "产品名称": name,
+                "品牌": brand,
+                "分类": family,
+                "原始价格": price_usd,
+                "原始币种": "USD",
+                "美元价格": price_usd,
+                "人民币价格": _usd_to_cny(price_usd),
+                "重量(克)": weight_g,
+                "规格": opt_label,
+                "是否有货": prod.get("in_stock", True),
+                "库存数量": 0,
+                "商品链接": link,
+                "原始ID": f"{opt_label}",
+                "产品大类": "烟斗丝",
+                "成分": components,
+                "切工": cut,
+                "劲道": strength,
+                "口味": family,
+            })
+
     return rows
 
 
