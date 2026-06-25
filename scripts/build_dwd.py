@@ -401,16 +401,24 @@ def _nov(items):
 
 
 def _sp(items):
-    """SP channel: smokingpipes.com bulk pipe tobacco"""
+    """SP channel: smokingpipes.com bulk pipe tobacco (weight in oz)"""
     rows = []
-    # items can be dict with "products" list or direct list
     prod_list = items.get("products", items) if isinstance(items, dict) else items
     if isinstance(prod_list, dict):
         prod_list = [prod_list]
 
     for prod in prod_list:
         price = float(prod.get("price_usd", 0))
-        g = prod.get("weight_g", 0)
+        # Keep weight in oz (no conversion to grams)
+        weight_oz = prod.get("weight_oz", "")
+        weight_g = 0
+        try:
+            # Store raw oz value for reference
+            oz_val = float(str(weight_oz).replace('oz', '').replace('lb', '').strip())
+            weight_g = oz_val * 28.35 if 'oz' in str(weight_oz) else 0
+        except:
+            oz_val = 0
+
         rows.append({
             "渠道": "sp",
             "库存编码": prod.get("sku", ""),
@@ -421,8 +429,8 @@ def _sp(items):
             "原始币种": "USD",
             "美元价格": price,
             "人民币价格": _usd_to_cny(price),
-            "重量(克)": g,
-            "规格": f"{g}g" if g else "",
+            "重量(克)": weight_g,
+            "规格": weight_oz,  # Keep oz format (e.g. "1oz")
             "是否有货": prod.get("in_stock", True),
             "库存数量": 0,
             "商品链接": prod.get("link", ""),
