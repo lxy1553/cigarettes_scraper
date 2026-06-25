@@ -401,27 +401,37 @@ def _nov(items):
 
 
 def _sp(items):
+    """SP channel: smokingpipes.com bulk pipe tobacco"""
     rows = []
-    for item in items:
-        price = float(item.get("price_usd", 0))
-        g = item.get("weight_g", 0)
+    # items can be dict with "products" list or direct list
+    prod_list = items.get("products", items) if isinstance(items, dict) else items
+    if isinstance(prod_list, dict):
+        prod_list = [prod_list]
+
+    for prod in prod_list:
+        price = float(prod.get("price_usd", 0))
+        g = prod.get("weight_g", 0)
         rows.append({
             "渠道": "sp",
-            "库存编码": item.get("sku", ""),
-            "产品名称": item.get("full_title", item.get("name", "")),
-            "品牌": item.get("brand", ""),
-            "分类": "",
+            "库存编码": prod.get("sku", ""),
+            "产品名称": prod.get("full_title", prod.get("name", "")),
+            "品牌": prod.get("brand", ""),
+            "分类": prod.get("family", ""),
             "原始价格": price,
             "原始币种": "USD",
             "美元价格": price,
             "人民币价格": _usd_to_cny(price),
             "重量(克)": g,
-            "规格": f"{g}g",
-            "是否有货": True,
+            "规格": f"{g}g" if g else "",
+            "是否有货": prod.get("in_stock", True),
             "库存数量": 0,
-            "商品链接": "",
-            "原始ID": item.get("sku", ""),
+            "商品链接": prod.get("link", ""),
+            "原始ID": prod.get("sku", ""),
             "产品大类": "烟斗丝",
+            "成分": prod.get("components", ""),
+            "切工": prod.get("cut", ""),
+            "劲道": prod.get("strength", ""),
+            "口味": prod.get("family", ""),
         })
     return rows
 
